@@ -1,0 +1,20 @@
+# =====================================================================
+# Manifeste OpenShift - Route (exposition externe)
+# Genere par IaC Chatbot (Thymeleaf)
+# =====================================================================
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: [[${appName}]]
+  labels:
+    app: [[${appName}]]
+    generated-by: iac-chatbot
+spec:
+  to:
+    kind: Service
+    name: [[${appName}]]
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Allow

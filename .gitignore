@@ -1,0 +1,39 @@
+# ===== SECRETS (JAMAIS sur GitHub !) =====
+.env
+**/.env
+openshift/pull-secret.json
+openshift/oc-token.txt
+openshift/id_microshift
+openshift/id_microshift.pub
+openshift/seed/
+
+# ===== Gros binaires / images disque =====
+*.iso
+*.qcow2
+*.vdi
+openshift/oc.exe
+openshift/*.zip
+
+# ===== Fichiers de construction et dépendances =====
+node_modules/
+dist/
+.angular/
+target/
+deploy-work/
+
+# ===== Fichiers temporaires LaTeX =====
+*.aux
+*.log
+*.out
+*.toc
+*.fdb_latexmk
+*.synctex.gz
+
+# ===== IDE / OS =====
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ===== Divers =====
+.brave-debug/

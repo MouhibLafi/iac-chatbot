@@ -1,0 +1,232 @@
+/* Page Historique — carte blanche arrondie, style cohérent avec le prototype */
+
+.page-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.history-panel {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+
+  h2 {
+    color: #667eea;
+    margin-bottom: 20px;
+  }
+}
+
+/* Filtres */
+.filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.filter-select {
+  padding: 10px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  background: white;
+  font-size: 14px;
+  color: #4a5568;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: #667eea;
+  }
+}
+
+.refresh-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.9em;
+  font-weight: 600;
+  transition: all 0.3s;
+
+  &:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+  }
+}
+
+/* Tableau de l'historique */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    text-align: left;
+    padding: 12px;
+    background: #f8f9fa;
+    color: #667eea;
+    font-weight: 600;
+    border-bottom: 2px solid #e0e0e0;
+  }
+
+  td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+  }
+}
+
+.request-row {
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #f8f9fa;
+  }
+}
+
+.col-date {
+  white-space: nowrap;
+  color: #666;
+  font-size: 0.9em;
+}
+
+/* Badges de statut colorés (appliqués via la liaison [class] :
+   les classes badge-* doivent être autonomes) */
+.badge-success,
+.badge-error,
+.badge-warning,
+.badge-info,
+.badge-running,
+.badge-pending {
+  display: inline-block;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.badge-success { background: #28a745; }  /* vert : SUCCESS */
+.badge-error { background: #dc3545; }    /* rouge : FAILED / CANCELLED */
+.badge-warning { background: #f39c12; }  /* orange : clarification */
+.badge-info { background: #3498db; }     /* bleu : completed / CODE_GENERATED */
+.badge-running { background: #e67e22; }  /* orange : RUNNING */
+.badge-pending { background: #764ba2; }  /* violet : PENDING_APPROVAL */
+
+/* Ligne de détail dépliée */
+.detail-row > td {
+  background: #f8f9fa;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.detail-content {
+  animation: slideIn 0.3s ease-out;
+}
+
+.detail-section {
+  margin-bottom: 15px;
+
+  p {
+    margin-top: 6px;
+    color: #555;
+  }
+}
+
+.params-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.param-badge {
+  background: #eef0fd;
+  color: #333;
+  border: 1px solid #667eea33;
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.85em;
+}
+
+.param-label {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.code-block {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85em;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.copy-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 5px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.85em;
+  transition: background 0.3s;
+
+  &:hover {
+    background: #5568d3;
+  }
+
+  &.copied {
+    background: #28a745;
+  }
+}
+
+.detail-meta {
+  color: #999;
+  font-size: 0.8em;
+  margin-top: 10px;
+}
+
+.loading,
+.empty {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.empty {
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .history-panel {
+    padding: 20px;
+  }
+
+  .col-date {
+    white-space: normal;
+  }
+}

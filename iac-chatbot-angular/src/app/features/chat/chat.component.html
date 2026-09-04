@@ -1,0 +1,236 @@
+<div class="page-container">
+  <app-header />
+
+  <!-- Indicateur de statut du backend -->
+  <div
+    class="status"
+    [class.online]="backendOnline() === true"
+    [class.offline]="backendOnline() === false"
+  >
+    <span class="status-dot"></span>
+    <span>
+      @if (backendOnline() === null) {
+        Vérification du backend...
+      } @else if (backendOnline()) {
+        Backend connecté ✓
+      } @else {
+        Backend déconnecté ✗
+      }
+    </span>
+  </div>
+
+  <div class="content">
+    <div class="chat-container">
+      <!-- Zone de messages scrollable -->
+      <div class="chat-messages" #messagesContainer>
+        <!-- Message de bienvenue affiché tant que le fil est vide -->
+        @if (messages().length === 0) {
+          <div class="welcome-message">
+            <h3>👋 Bienvenue sur le Chatbot IaC !</h3>
+            <p>Décrivez l'infrastructure souhaitée en langage naturel :</p>
+            <ul>
+              <li>« Crée une VM Ubuntu 22.04 avec 4 CPU et 8 Go de RAM sur vSphere »</li>
+              <li>« Déploie 3 replicas de nginx sur OpenShift »</li>
+              <li>« VM Windows Server 2022 avec 100 Go de stockage »</li>
+            </ul>
+          </div>
+        }
+
+        <!-- Fil de messages -->
+        @for (message of messages(); track $index) {
+          @if (message.kind === 'user') {
+            <!-- Bulle utilisateur -->
+            <div class="message message-user">
+              <div class="message-content">{{ message.text }}</div>
+            </div>
+          } @else if (message.kind === 'bot' && message.response) {
+            <!-- Bulle bot : statut, message, paramètres extraits, code généré -->
+            <div class="message message-bot">
+              <div class="message-content">
+                <div class="message-header">
+                  🤖 Assistant
+                  <span
+                    class="status-badge"
+                    [class]="statusBadgeClass(message.response.status)"
+                  >✓ {{ message.response.status }}</span>
+                </div>
+
+                <!--
+                  Message du bot. En cas de "clarification_needed", seul ce
+                  message est affiché (pas de bloc de code).
+                -->
+                <p
+                  class="bot-text"
+                  [class.clarification]="isClarification(message.response)"
+                >{{ message.response.message }}</p>
+
+                <!-- Badges des paramètres extraits -->
+                @if (paramBadges(message.response.extractedParams).length > 0) {
+                  <div class="params-section">
+                    <strong>📋 Paramètres extraits :</strong>
+                    <div class="params-badges">
+                      @for (param of paramBadges(message.response.extractedParams); track param.label) {
+                        <span class="param-badge">
+                          <span class="param-label">{{ param.label }} :</span> {{ param.value }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <!-- Bloc de code IaC généré avec bouton Copier -->
+                @if (message.response.generatedCode && !isClarification(message.response)) {
+                  <div class="code-header">
+                    <strong>📄 Code IaC généré :</strong>
+                    <button
+                      type="button"
+                      class="copy-btn"
+                      [class.copied]="message.copied"
+                      (click)="copyCode(message)"
+                    >
+                      {{ message.copied ? '✓ Copié !' : '📋 Copier' }}
+                    </button>
+                  </div>
+                  <pre class="code-block">{{ message.response.generatedCode }}</pre>
+                }
+
+                <!-- Actions de déploiement (code généré avec succès) -->
+                @if (canDeploy(message)) {
+                  <div class="deploy-section">
+                    @if (!message.deployResult || message.deployResult.status === 'CANCELLED') {
+                      <button
+                        type="button"
+                        class="deploy-btn"
+                        [disabled]="message.deploying"
+                        (click)="deployCode(message)"
+                      >
+                        {{ message.deploying ? 'Déploiement en cours...' : '🚀 Déployer' }}
+                      </button>
+                    }
+
+                    <!-- Progression temps réel du déploiement (WebSocket /topic/progress) -->
+                    @if (message.deploying) {
+                      @if (message.deployProgress; as dp) {
+                        <div class="progress-wrapper deploy-progress">
+                          <div class="progress-label">
+                            <span class="progress-step">{{ dp.step }}</span>
+                            <span class="progress-message">{{ dp.message }}</span>
+                            <span class="progress-percent">{{ dp.percent }}%</span>
+                          </div>
+                          <div class="progress-bar">
+                            <div class="progress-fill" [style.width.%]="dp.percent"></div>
+                          </div>
+                        </div>
+                      } @else {
+                        <div class="deploy-waiting">
+                          <span class="loader"></span> Déploiement en cours...
+                        </div>
+                      }
+                    }
+
+                    <!-- Résultat du déploiement : badge + actions logs / annulation -->
+                    @if (message.deployResult; as result) {
+                      <div class="deploy-result">
+                        <span class="status-badge" [class]="statusBadgeClass(result.status)">
+                          {{ result.status === 'SUCCESS' ? '✅ Déployé' : result.status }}
+                        </span>
+                        <span class="deploy-message">{{ result.message }}</span>
+                        <button type="button" class="logs-btn" (click)="toggleLogs(message)">
+                          {{ message.showLogs ? '📜 Masquer les logs' : '📜 Voir les logs' }}
+                        </button>
+                        @if (result.status === 'SUCCESS') {
+                          <button type="button" class="cancel-btn" (click)="cancelDeploy(message)">
+                            🗑️ Annuler
+                          </button>
+                        }
+                      </div>
+
+                      <!-- Panneau des logs de déploiement -->
+                      @if (message.showLogs && message.deployLogs) {
+                        <div class="deploy-logs">
+                          @for (log of message.deployLogs; track log.id) {
+                            <div class="log-line" [class.log-error]="log.logLevel === 'ERROR'" [class.log-warn]="log.logLevel === 'WARN'">
+                              <span class="log-step">[{{ log.step }}]</span> {{ log.message }}
+                            </div>
+                          } @empty {
+                            <div class="log-line">Aucun log disponible.</div>
+                          }
+                        </div>
+                      }
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          } @else {
+            <!-- Message d'erreur -->
+            <div class="error-message">❌ {{ message.text }}</div>
+          }
+        }
+
+        <!-- Indicateur d'attente : barre de progression temps réel (WebSocket)
+             ou spinner classique en repli si le WebSocket n'est pas connecté -->
+        @if (loading()) {
+          <div class="message message-bot">
+            <div class="message-content typing">
+              @if (wsService.connected() && progress(); as p) {
+                <div class="progress-wrapper">
+                  <div class="progress-label">
+                    <span class="progress-step">{{ p.step }}</span>
+                    <span class="progress-message">{{ p.message }}</span>
+                    <span class="progress-percent">{{ p.percent }}%</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill" [style.width.%]="p.percent"></div>
+                  </div>
+                </div>
+              } @else {
+                <span class="loader"></span> Génération du code en cours...
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Zone de saisie : sélecteur de plateforme + textarea + bouton envoyer -->
+      <div class="chat-input-container">
+        <div class="input-wrapper">
+          <select
+            class="platform-select"
+            name="targetPlatform"
+            [(ngModel)]="targetPlatform"
+            [disabled]="loading()"
+            title="Plateforme cible"
+          >
+            <option value="auto">🔀 Auto</option>
+            <option value="vsphere">☁️ VMware vSphere</option>
+            <option value="openshift">🔴 OpenShift / KubeVirt</option>
+          </select>
+
+          <textarea
+            class="message-input"
+            name="userMessage"
+            [(ngModel)]="userMessage"
+            (keydown)="onTextareaKeydown($event)"
+            [disabled]="loading()"
+            rows="2"
+            placeholder="Décrivez l'infrastructure souhaitée... (Entrée pour envoyer, Maj+Entrée pour un saut de ligne)"
+          ></textarea>
+
+          <button
+            type="button"
+            class="send-btn"
+            [disabled]="loading() || !userMessage.trim()"
+            (click)="sendMessage()"
+          >
+            @if (loading()) {
+              <span class="loader"></span>
+            } @else {
+              Envoyer
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

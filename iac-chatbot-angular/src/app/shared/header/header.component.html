@@ -1,0 +1,34 @@
+<header class="header">
+  <div class="header-content">
+    <div class="header-left">
+      <h1>🤖 IaC Chatbot</h1>
+      <p>Générateur d'Infrastructure as Code</p>
+    </div>
+
+    <div class="header-right">
+      @if (authService.currentUser(); as user) {
+        <div class="user-section">
+          <!-- Nom d'utilisateur + badge de rôle -->
+          <span class="user-info">
+            👤 {{ user.username }}
+            <span
+              class="role-badge"
+              [class.role-admin]="authService.isAdmin()"
+              [class.role-user]="!authService.isAdmin()"
+            >{{ roleLabel(user.role) }}</span>
+          </span>
+
+          <!-- Navigation -->
+          <a routerLink="/chat" routerLinkActive="active" class="nav-link">💬 Chat</a>
+          <a routerLink="/history" routerLinkActive="active" class="nav-link">📜 Historique</a>
+          @if (authService.isAdmin()) {
+            <a routerLink="/admin" routerLinkActive="active" class="nav-link admin-link">⚙️ Admin</a>
+          }
+
+          <!-- Déconnexion -->
+          <button type="button" class="logout-btn" (click)="logout()">Déconnexion</button>
+        </div>
+      }
+    </div>
+  </div>
+</header>

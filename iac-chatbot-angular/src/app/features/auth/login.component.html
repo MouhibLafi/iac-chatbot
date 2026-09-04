@@ -1,0 +1,158 @@
+<div class="auth-container">
+  <div class="auth-box">
+    <!-- En-tête -->
+    <div class="auth-header">
+      <h1>🤖 IaC Chatbot</h1>
+      <p>Infrastructure as Code Generator</p>
+    </div>
+
+    <!-- Messages d'alerte -->
+    @if (alertMessage()) {
+      <div
+        class="alert show"
+        [class.alert-error]="alertType() === 'error'"
+        [class.alert-success]="alertType() === 'success'"
+      >
+        {{ alertMessage() }}
+      </div>
+    }
+
+    <!-- Onglets -->
+    <div class="auth-tabs">
+      <button
+        type="button"
+        class="auth-tab"
+        [class.active]="activeTab() === 'login'"
+        (click)="switchTab('login')"
+      >
+        Connexion
+      </button>
+      <button
+        type="button"
+        class="auth-tab"
+        [class.active]="activeTab() === 'register'"
+        (click)="switchTab('register')"
+      >
+        Inscription
+      </button>
+    </div>
+
+    <!-- Formulaire de connexion -->
+    @if (activeTab() === 'login') {
+      <form class="auth-form active" (ngSubmit)="onLogin()">
+        <div class="form-group">
+          <label for="loginUsername">Nom d'utilisateur</label>
+          <input
+            type="text"
+            id="loginUsername"
+            name="loginUsername"
+            [(ngModel)]="loginUsername"
+            required
+            placeholder="Entrez votre nom d'utilisateur"
+            autocomplete="username"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Mot de passe</label>
+          <div class="password-toggle">
+            <input
+              [type]="showLoginPassword() ? 'text' : 'password'"
+              id="loginPassword"
+              name="loginPassword"
+              [(ngModel)]="loginPassword"
+              required
+              placeholder="Entrez votre mot de passe"
+              autocomplete="current-password"
+            >
+            <button
+              type="button"
+              class="password-toggle-btn"
+              (click)="showLoginPassword.set(!showLoginPassword())"
+              title="Afficher / masquer le mot de passe"
+            >
+              👁️
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="auth-button" [disabled]="loading()">
+          {{ loading() ? 'Connexion en cours...' : 'Se connecter' }}
+          @if (loading()) {
+            <span class="loader-inline"></span>
+          }
+        </button>
+      </form>
+    }
+
+    <!-- Formulaire d'inscription -->
+    @if (activeTab() === 'register') {
+      <form class="auth-form active" (ngSubmit)="onRegister()">
+        <div class="form-group">
+          <label for="registerUsername">Nom d'utilisateur</label>
+          <input
+            type="text"
+            id="registerUsername"
+            name="registerUsername"
+            [(ngModel)]="registerUsername"
+            required
+            minlength="3"
+            placeholder="3 caractères minimum"
+            autocomplete="username"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="registerEmail">Email</label>
+          <input
+            type="email"
+            id="registerEmail"
+            name="registerEmail"
+            [(ngModel)]="registerEmail"
+            required
+            placeholder="votre@email.com"
+            autocomplete="email"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="registerPassword">Mot de passe</label>
+          <div class="password-toggle">
+            <input
+              [type]="showRegisterPassword() ? 'text' : 'password'"
+              id="registerPassword"
+              name="registerPassword"
+              [(ngModel)]="registerPassword"
+              required
+              minlength="6"
+              placeholder="6 caractères minimum"
+              autocomplete="new-password"
+            >
+            <button
+              type="button"
+              class="password-toggle-btn"
+              (click)="showRegisterPassword.set(!showRegisterPassword())"
+              title="Afficher / masquer le mot de passe"
+            >
+              👁️
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="auth-button" [disabled]="loading()">
+          {{ loading() ? 'Inscription en cours...' : "S'inscrire" }}
+          @if (loading()) {
+            <span class="loader-inline"></span>
+          }
+        </button>
+      </form>
+    }
+
+    <!-- Comptes de démonstration -->
+    <div class="demo-credentials">
+      <h4>🎯 Comptes de démonstration</h4>
+      <p><strong>Admin :</strong> <code>admin</code> / <code>password123</code></p>
+      <p><strong>User :</strong> <code>user</code> / <code>password123</code></p>
+    </div>
+  </div>
+</div>

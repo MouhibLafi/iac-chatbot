@@ -1,0 +1,34 @@
+# =====================================================================
+# Manifeste OpenShift - Deployment (conteneur)
+# Genere par IaC Chatbot (Thymeleaf)
+# =====================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: [[${appName}]]
+  labels:
+    app: [[${appName}]]
+    generated-by: iac-chatbot
+spec:
+  replicas: [[${replicas}]]
+  selector:
+    matchLabels:
+      app: [[${appName}]]
+  template:
+    metadata:
+      labels:
+        app: [[${appName}]]
+    spec:
+      containers:
+        - name: [[${appName}]]
+          image: [[${containerImage}]]:latest
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "[[${cpu}]]"
+              memory: "[[${ramGb}]]Gi"

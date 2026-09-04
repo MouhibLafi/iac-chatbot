@@ -1,0 +1,107 @@
+# ==============================================================================
+# IaC Chatbot - Stack de production complete (100% GRATUITE)
+#
+# Services :
+#   - mysql    : MySQL Community 8.0 (base de donnees production)
+#   - ollama   : IA locale Llama 3 (100% offline, zero cout API)
+#   - backend  : API Spring Boot 3.2 (port 8081)
+#   - frontend : Angular servi par nginx (port 80)
+#
+# Demarrage :  docker-compose up -d
+# ==============================================================================
+
+services:
+
+  # ------------------------------------------------------------------
+  # MySQL Community 8.0 (GRATUIT)
+  # ------------------------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: iac-mysql
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-iac_chatbot}
+      MYSQL_USER: ${DB_USER:-iac_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-iac_password}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_password}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - iac-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ------------------------------------------------------------------
+  # Ollama - IA locale Llama 3 (100% OFFLINE ET GRATUIT)
+  # OPTIONNEL : profil "ollama-docker". Par defaut, le backend utilise
+  # Ollama installe sur la machine hote (host.docker.internal:11434).
+  # ------------------------------------------------------------------
+  ollama:
+    image: ollama/ollama:latest
+    container_name: iac-ollama
+    profiles:
+      - ollama-docker
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - iac-network
+    ports:
+      - "11434:11434"
+    restart: unless-stopped
+    # Apres le premier demarrage, telecharger le modele :
+    #   docker exec iac-ollama ollama pull llama3
+
+  # ------------------------------------------------------------------
+  # Backend Spring Boot
+  # ------------------------------------------------------------------
+  backend:
+    build: ./iac-chatbot-backend
+    container_name: iac-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-iac_chatbot}
+      DB_USER: ${DB_USER:-iac_user}
+      DB_PASSWORD: ${DB_PASSWORD:-iac_password}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production-this-is-a-very-long-secret-key-for-jwt}
+    ports:
+      - "8082:8081"
+    networks:
+      - iac-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ------------------------------------------------------------------
+  # Frontend Angular (nginx)
+  # ------------------------------------------------------------------
+  frontend:
+    build: ./iac-chatbot-angular
+    container_name: iac-frontend
+    ports:
+      - "80:80"
+    networks:
+      - iac-network
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+# ==============================================================================
+# Volumes (persistance des donnees)
+# ==============================================================================
+volumes:
+  mysql_data:
+  ollama_data:
+
+# ==============================================================================
+# Reseau interne
+# ==============================================================================
+networks:
+  iac-network:
+    driver: bridge

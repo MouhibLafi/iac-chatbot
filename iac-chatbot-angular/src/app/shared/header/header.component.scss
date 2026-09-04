@@ -1,0 +1,117 @@
+/* En-tête — carte blanche arrondie avec ombre douce (style du prototype) */
+
+.header {
+  background: white;
+  padding: 25px 30px;
+  border-radius: 15px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.header-left {
+  h1 {
+    color: #667eea;
+    font-size: 2em;
+    margin-bottom: 5px;
+  }
+
+  p {
+    color: #666;
+    font-size: 1em;
+  }
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.user-info {
+  color: #667eea;
+  font-weight: 600;
+  padding: 8px 15px;
+  background: #f8f9fa;
+  border-radius: 20px;
+  font-size: 0.95em;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.role-badge {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.75em;
+  font-weight: bold;
+  color: white;
+
+  &.role-admin {
+    background: #f39c12;
+  }
+
+  &.role-user {
+    background: #667eea;
+  }
+}
+
+.nav-link {
+  color: #667eea;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+
+  &:hover,
+  &.active {
+    background: #667eea;
+    color: white;
+  }
+
+  /* Lien Admin en orange, comme le prototype */
+  &.admin-link {
+    color: white;
+    background: #f39c12;
+
+    &:hover,
+    &.active {
+      background: #e67e22;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+    }
+  }
+}
+
+.logout-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.9em;
+  font-weight: 600;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+  }
+}
+
+@media (max-width: 768px) {
+  .header-left h1 {
+    font-size: 1.5em;
+  }
+}

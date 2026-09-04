@@ -1,0 +1,311 @@
+<div class="page-container">
+  <app-header />
+
+  <div class="admin-panel">
+    <h2>⚙️ Dashboard d'administration</h2>
+
+    <!-- Message d'alerte (succès / erreur) -->
+    @if (alertMessage()) {
+      <div
+        class="alert"
+        [class.alert-error]="alertType() === 'error'"
+        [class.alert-success]="alertType() === 'success'"
+      >
+        {{ alertMessage() }}
+      </div>
+    }
+
+    <!-- Cartes de statistiques -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-info">
+          <div class="stat-value">{{ totalUsers() ?? '—' }}</div>
+          <div class="stat-label">Utilisateurs</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-info">
+          <div class="stat-value">{{ totalRequests() ?? '—' }}</div>
+          <div class="stat-label">Requêtes IaC</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">🖥️</div>
+        <div class="stat-info">
+          <div
+            class="stat-value"
+            [class.status-ok]="backendOnline() === true"
+            [class.status-ko]="backendOnline() === false"
+          >
+            @if (backendOnline() === null) {
+              …
+            } @else if (backendOnline()) {
+              ✓
+            } @else {
+              ✗
+            }
+          </div>
+          <div class="stat-label">Backend</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Onglets du dashboard -->
+    <div class="admin-tabs">
+      <button
+        type="button"
+        class="admin-tab"
+        [class.active]="activeTab() === 'users'"
+        (click)="switchTab('users')"
+      >
+        👥 Utilisateurs
+      </button>
+      <button
+        type="button"
+        class="admin-tab"
+        [class.active]="activeTab() === 'pending'"
+        (click)="switchTab('pending')"
+      >
+        ✅ Validations
+      </button>
+      <button
+        type="button"
+        class="admin-tab"
+        [class.active]="activeTab() === 'all'"
+        (click)="switchTab('all')"
+      >
+        📊 Toutes les demandes
+      </button>
+    </div>
+
+    <!-- ===================== Onglet Utilisateurs ===================== -->
+    @if (activeTab() === 'users') {
+      <div class="tab-content">
+        <h3>Gestion des utilisateurs</h3>
+
+        @if (loadingUsers()) {
+          <div class="loading">Chargement des utilisateurs...</div>
+        } @else if (users().length === 0) {
+          <p class="empty">Aucun utilisateur trouvé</p>
+        } @else {
+          <div class="table-wrapper">
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nom d'utilisateur</th>
+                  <th>Email</th>
+                  <th>Rôle</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (user of users(); track user.id) {
+                  <tr>
+                    <td>{{ user.id }}</td>
+                    <td><strong>{{ user.username }}</strong></td>
+                    <td>{{ user.email || 'N/A' }}</td>
+                    <td>
+                      <span
+                        class="role-badge"
+                        [class.role-admin]="isAdminRole(user.role)"
+                        [class.role-user]="!isAdminRole(user.role)"
+                      >{{ roleLabel(user.role) }}</span>
+                    </td>
+                    <td class="actions-cell">
+                      <button type="button" class="quota-btn" (click)="toggleQuotaEditor(user)">
+                        📊 Quotas
+                      </button>
+                      @if (user.username === authService.currentUser()?.username) {
+                        <span class="self-label">Vous-même</span>
+                      } @else {
+                        <button type="button" class="delete-btn" (click)="deleteUser(user)">
+                          🗑️ Supprimer
+                        </button>
+                      }
+                    </td>
+                  </tr>
+
+                  <!-- Ligne d'édition des quotas (dépliable) -->
+                  @if (quotaEditorOpen() === user.id) {
+                    <tr class="quota-row">
+                      <td colspan="5">
+                        <div class="quota-editor">
+                          <strong>Quotas de {{ user.username }} :</strong>
+                          <label>
+                            CPU
+                            <input
+                              type="number"
+                              min="0"
+                              [(ngModel)]="quotaForms[user.id].quotaCpu"
+                              [ngModelOptions]="{ standalone: true }"
+                            >
+                          </label>
+                          <label>
+                            RAM (Go)
+                            <input
+                              type="number"
+                              min="0"
+                              [(ngModel)]="quotaForms[user.id].quotaRam"
+                              [ngModelOptions]="{ standalone: true }"
+                            >
+                          </label>
+                          <label>
+                            Stockage (Go)
+                            <input
+                              type="number"
+                              min="0"
+                              [(ngModel)]="quotaForms[user.id].quotaStorage"
+                              [ngModelOptions]="{ standalone: true }"
+                            >
+                          </label>
+                          <button type="button" class="save-btn" (click)="saveQuota(user)">
+                            💾 Enregistrer
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ===================== Onglet Validations ===================== -->
+    @if (activeTab() === 'pending') {
+      <div class="tab-content">
+        <h3>Demandes en attente d'approbation</h3>
+
+        @if (loadingPending()) {
+          <div class="loading">Chargement des demandes...</div>
+        } @else if (pendingRequests().length === 0) {
+          <p class="empty">Aucune demande en attente de validation 🎉</p>
+        } @else {
+          <div class="pending-list">
+            @for (request of pendingRequests(); track request.id) {
+              <div class="pending-card">
+                <div class="pending-header">
+                  <span class="status-badge" [class]="statusBadgeClass(request.status)">
+                    {{ request.status }}
+                  </span>
+                  <span class="pending-date">Demande #{{ request.id }} — {{ formatDate(request.createdAt) }}</span>
+                </div>
+
+                <p class="pending-message">{{ request.userMessage }}</p>
+
+                <!-- Paramètres extraits -->
+                @if (paramBadges(parseExtractedParams(request.extractedParams)).length > 0) {
+                  <div class="params-badges">
+                    @for (param of paramBadges(parseExtractedParams(request.extractedParams)); track param.label) {
+                      <span class="param-badge">
+                        <span class="param-label">{{ param.label }} :</span> {{ param.value }}
+                      </span>
+                    }
+                  </div>
+                }
+
+                <!-- Code généré (repliable) -->
+                @if (request.generatedCode) {
+                  <button type="button" class="toggle-code-btn" (click)="togglePendingDetail(request.id)">
+                    {{ expandedPendingId() === request.id ? '▲ Masquer le code' : '▼ Voir le code généré' }}
+                  </button>
+                  @if (expandedPendingId() === request.id) {
+                    <pre class="code-block">{{ request.generatedCode }}</pre>
+                  }
+                }
+
+                <!-- Actions d'approbation / rejet -->
+                <div class="pending-actions">
+                  <button type="button" class="approve-btn" (click)="approve(request)">
+                    ✅ Approuver
+                  </button>
+                  <button type="button" class="reject-btn" (click)="reject(request)">
+                    ❌ Rejeter
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ===================== Onglet Toutes les demandes ===================== -->
+    @if (activeTab() === 'all') {
+      <div class="tab-content">
+        <h3>Toutes les demandes</h3>
+
+        <!-- Filtres : statut + plateforme -->
+        <div class="filters">
+          <select
+            class="filter-select"
+            name="allStatusFilter"
+            [(ngModel)]="allStatusFilter"
+            (change)="loadAllRequests()"
+          >
+            @for (option of statusOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+
+          <select
+            class="filter-select"
+            name="allPlatformFilter"
+            [(ngModel)]="allPlatformFilter"
+            (change)="loadAllRequests()"
+          >
+            @for (option of platformOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+
+          <button type="button" class="refresh-btn" (click)="loadAllRequests()">🔄 Actualiser</button>
+        </div>
+
+        @if (loadingAll()) {
+          <div class="loading">Chargement des demandes...</div>
+        } @else if (allRequests().length === 0) {
+          <p class="empty">Aucune demande trouvée</p>
+        } @else {
+          <div class="table-wrapper">
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Date</th>
+                  <th>Message</th>
+                  <th>Type</th>
+                  <th>Plateforme</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (request of allRequests(); track request.id) {
+                  <tr>
+                    <td>{{ request.id }}</td>
+                    <td class="col-date">{{ formatDate(request.createdAt) }}</td>
+                    <td>{{ truncate(request.userMessage) }}</td>
+                    <td>{{ request.resourceType || '—' }}</td>
+                    <td>{{ request.targetPlatform || '—' }}</td>
+                    <td>
+                      <span class="status-badge" [class]="statusBadgeClass(request.status)">
+                        {{ request.status }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

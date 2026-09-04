@@ -1,0 +1,63 @@
+# =====================================================================
+# Manifeste OpenShift - VM KubeVirt (OpenShift Virtualization)
+# Genere par IaC Chatbot (Thymeleaf)
+# =====================================================================
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: [[${vmName}]]
+  labels:
+    app: [[${vmName}]]
+    generated-by: iac-chatbot
+spec:
+  running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: [[${vmName}]]
+    spec:
+      domain:
+        cpu:
+          cores: [[${cpu}]]
+        memory:
+          guest: [[${ramGb}]]Gi
+        devices:
+          disks:
+            - name: rootdisk
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default
+              masquerade: {}
+        resources:
+          requests:
+            memory: [[${ramGb}]]Gi
+            cpu: "[[${cpu}]]"
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - name: rootdisk
+          dataVolume:
+            name: [[${vmName}]]-dv
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              hostname: [[${vmName}]]
+  dataVolumeTemplates:
+    - metadata:
+        name: [[${vmName}]]-dv
+      spec:
+        source:
+          registry:
+            url: "docker://quay.io/containerdisks/[[${osImage}]]"
+        pvc:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: [[${storageGb}]]Gi

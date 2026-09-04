@@ -1,0 +1,14 @@
+#cloud-config
+hostname: microshift
+preserve_hostname: false
+ssh_pwauth: true
+chpasswd:
+  list: |
+    ocp:MicroShift2025!
+  expire: false
+users:
+  - name: ocp
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: wheel
+    shell: /bin/bash
+    lock_passwd: false

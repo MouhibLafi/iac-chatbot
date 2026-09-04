@@ -1,0 +1,120 @@
+<div class="page-container">
+  <app-header />
+
+  <div class="history-panel">
+    <h2>📜 Historique de mes demandes</h2>
+
+    <!-- Filtres : statut + plateforme -->
+    <div class="filters">
+      <select
+        class="filter-select"
+        name="statusFilter"
+        [(ngModel)]="statusFilter"
+        (change)="load()"
+      >
+        @for (option of statusOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+
+      <select
+        class="filter-select"
+        name="platformFilter"
+        [(ngModel)]="platformFilter"
+        (change)="load()"
+      >
+        @for (option of platformOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+
+      <button type="button" class="refresh-btn" (click)="load()">🔄 Actualiser</button>
+    </div>
+
+    @if (loading()) {
+      <div class="loading">Chargement de l'historique...</div>
+    } @else if (requests().length === 0) {
+      <p class="empty">Aucune demande trouvée</p>
+    } @else {
+      <div class="table-wrapper">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Message</th>
+              <th>Type</th>
+              <th>Plateforme</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (request of requests(); track request.id) {
+              <!-- Ligne principale (cliquable) -->
+              <tr class="request-row" (click)="toggleDetail(request.id)">
+                <td class="col-date">{{ formatDate(request.createdAt) }}</td>
+                <td>{{ truncate(request.userMessage) }}</td>
+                <td>{{ request.resourceType || '—' }}</td>
+                <td>{{ request.targetPlatform || '—' }}</td>
+                <td>
+                  <span class="status-badge" [class]="statusBadgeClass(request.status)">
+                    {{ request.status }}
+                  </span>
+                </td>
+              </tr>
+
+              <!-- Ligne de détail (dépliable) -->
+              @if (expandedId() === request.id) {
+                <tr class="detail-row">
+                  <td colspan="5">
+                    <div class="detail-content">
+                      <div class="detail-section">
+                        <strong>💬 Message complet :</strong>
+                        <p>{{ request.userMessage }}</p>
+                      </div>
+
+                      <!-- Paramètres extraits (champ JSON sérialisé côté backend) -->
+                      @if (paramBadges(parseExtractedParams(request.extractedParams)).length > 0) {
+                        <div class="detail-section">
+                          <strong>📋 Paramètres extraits :</strong>
+                          <div class="params-badges">
+                            @for (param of paramBadges(parseExtractedParams(request.extractedParams)); track param.label) {
+                              <span class="param-badge">
+                                <span class="param-label">{{ param.label }} :</span> {{ param.value }}
+                              </span>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      <!-- Code généré avec bouton Copier -->
+                      @if (request.generatedCode) {
+                        <div class="detail-section">
+                          <div class="code-header">
+                            <strong>📄 Code IaC généré :</strong>
+                            <button
+                              type="button"
+                              class="copy-btn"
+                              [class.copied]="copiedId() === request.id"
+                              (click)="copyCode(request); $event.stopPropagation()"
+                            >
+                              {{ copiedId() === request.id ? '✓ Copié !' : '📋 Copier' }}
+                            </button>
+                          </div>
+                          <pre class="code-block">{{ request.generatedCode }}</pre>
+                        </div>
+                      }
+
+                      <div class="detail-meta">
+                        Traitée le : {{ formatDate(request.processedAt) }}
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
