@@ -83,7 +83,6 @@ démarre en mode **simulation** (aucune ressource réelle créée).
 | [Cahier_des_Charges_IaC_Chatbot_FINAL.pdf](Cahier_des_Charges_IaC_Chatbot_FINAL.pdf) | Cahier des charges final (version officielle) |
 | [Architecture_IaC_Chatbot_UML_FINALE.pdf](Architecture_IaC_Chatbot_UML_FINALE.pdf) | Architecture et diagrammes UML |
 | [Infrastructure as Code & Automation 1.pdf](<Infrastructure as Code & Automation 1.pdf>) | Document officiel de la société |
-| [Guide_Developpement_Kimi.pdf](Guide_Developpement_Kimi.pdf) | Guide de développement pour assistant IA |
 
 ## API principale
 
