@@ -57,6 +57,7 @@ class ChatbotControllerTest {
     @InjectMocks
     private ChatbotController controller;
 
+    @SuppressWarnings("null")
     @BeforeEach
     void setUp() {
         // La sauvegarde retourne l'entite avec un ID
@@ -80,6 +81,7 @@ class ChatbotControllerTest {
         return params;
     }
 
+    @SuppressWarnings("null")
     @Test
     void processMessage_succes_vmVsphere() {
         when(llmService.extractParameters(anyString()))
@@ -90,9 +92,11 @@ class ChatbotControllerTest {
                 controller.processMessage(new ChatRequest("VM Ubuntu 2 CPU", "auto"));
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("success", response.getBody().getStatus());
-        assertNotNull(response.getBody().getGeneratedCode());
-        assertTrue(response.getBody().getMessage().contains("vSphere"));
+        ChatResponse body = response.getBody();
+        assertNotNull(body);
+        assertEquals("success", body.getStatus());
+        assertNotNull(body.getGeneratedCode());
+        assertTrue(body.getMessage().contains("vSphere"));
         verify(repository, times(2)).save(any());
         verify(progressService, atLeast(3)).sendProgress(any(), anyString(), anyInt(), anyString());
     }
@@ -109,8 +113,10 @@ class ChatbotControllerTest {
                 controller.processMessage(new ChatRequest("conteneur nginx", "auto"));
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("success", response.getBody().getStatus());
-        assertTrue(response.getBody().getMessage().contains("OpenShift"));
+        ChatResponse body = response.getBody();
+        assertNotNull(body);
+        assertEquals("success", body.getStatus());
+        assertTrue(body.getMessage().contains("OpenShift"));
     }
 
     @Test
@@ -124,7 +130,9 @@ class ChatbotControllerTest {
                 controller.processMessage(new ChatRequest("VM Ubuntu", "openshift"));
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(PlatformType.OPENSHIFT, response.getBody().getExtractedParams().getPlatform());
+        ChatResponse body = response.getBody();
+        assertNotNull(body);
+        assertEquals(PlatformType.OPENSHIFT, body.getExtractedParams().getPlatform());
         verify(iaCGeneratorService).generateCode(argThat(p -> p.getPlatform() == PlatformType.OPENSHIFT));
     }
 
@@ -139,7 +147,9 @@ class ChatbotControllerTest {
                 controller.processMessage(new ChatRequest("conteneur sur vsphere", "auto"));
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("clarification_needed", response.getBody().getStatus());
+        ChatResponse body = response.getBody();
+        assertNotNull(body);
+        assertEquals("clarification_needed", body.getStatus());
     }
 
     @Test
@@ -151,6 +161,8 @@ class ChatbotControllerTest {
                 controller.processMessage(new ChatRequest("test", "auto"));
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("error", response.getBody().getStatus());
+        ChatResponse body = response.getBody();
+        assertNotNull(body);
+        assertEquals("error", body.getStatus());
     }
 }

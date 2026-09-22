@@ -4,8 +4,6 @@ import com.company.iacchatbot.model.InfrastructureRequest;
 import com.company.iacchatbot.model.User;
 import com.company.iacchatbot.repository.InfrastructureRequestRepository;
 import com.company.iacchatbot.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,8 +25,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/history")
 @CrossOrigin(origins = "*")
 public class HistoryController {
-
-    private static final Logger log = LoggerFactory.getLogger(HistoryController.class);
 
     private final InfrastructureRequestRepository requestRepository;
     private final UserRepository userRepository;
@@ -52,7 +48,7 @@ public class HistoryController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentification requise");
         }
         List<InfrastructureRequest> requests =
-                requestRepository.findByUserIdOrderByCreatedAtDesc(currentUser.getId());
+                requestRepository.findByUserIdWithUserOrderByCreatedAtDesc(currentUser.getId());
         return ResponseEntity.ok(applyFilters(requests, status, platform));
     }
 
@@ -65,7 +61,7 @@ public class HistoryController {
     public ResponseEntity<List<InfrastructureRequest>> getAllHistory(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String platform) {
-        List<InfrastructureRequest> requests = requestRepository.findAllByOrderByCreatedAtDesc();
+        List<InfrastructureRequest> requests = requestRepository.findAllWithUserOrderByCreatedAtDesc();
         return ResponseEntity.ok(applyFilters(requests, status, platform));
     }
 

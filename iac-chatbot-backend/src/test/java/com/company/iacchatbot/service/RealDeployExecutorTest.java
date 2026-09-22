@@ -18,7 +18,7 @@ class RealDeployExecutorTest {
     Path tempDir;
 
     private RealDeployExecutor executor(String vboxPath) {
-        return new RealDeployExecutor(vboxPath, "oc", "", "", tempDir.toString(), 10);
+        return new RealDeployExecutor(vboxPath, "oc", "", "", tempDir.toString(), "C:/oc-bin", 10L);
     }
 
     private InfrastructureRequest demandeVm() {
@@ -44,8 +44,33 @@ class RealDeployExecutorTest {
     }
 
     @Test
-    void vmName_nomDeterministe_parId() {
-        assertEquals("iac-vm-1", RealDeployExecutor.vmName(demandeVm()));
+    void resolveVmName_suffixeAleatoireStockeEtReutilise() {
+        InfrastructureRequest req = demandeVm();
+
+        String name = RealDeployExecutor.resolveVmName(req, "");
+
+        // Format iac-vm-<3 caractères alphanumériques> et stocké dans la demande
+        assertTrue(name.matches("iac-vm-[a-z0-9]{3}"), "nom inattendu : " + name);
+        assertEquals(name, req.getResourceName());
+        // Un nom déjà stocké est réutilisé tel quel (indispensable pour la suppression)
+        assertEquals(name, RealDeployExecutor.resolveVmName(req, ""));
+    }
+
+    @Test
+    void resolveVmName_eviteLesCollisionsAvecVmsExistantes() {
+        InfrastructureRequest req = demandeVm();
+        req.setResourceName("iac-vm-abc");
+
+        // Le nom stocké est réutilisé même si présent dans la liste (retry, annulation...)
+        assertEquals("iac-vm-abc",
+                RealDeployExecutor.resolveVmName(req, "\"iac-vm-abc\""));
+    }
+
+    @Test
+    void randomSuffix_troisCaracteresAlphanumeriques() {
+        for (int i = 0; i < 50; i++) {
+            assertTrue(RealDeployExecutor.randomSuffix().matches("[a-z0-9]{3}"));
+        }
     }
 
     @Test

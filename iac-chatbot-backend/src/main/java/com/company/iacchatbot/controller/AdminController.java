@@ -10,6 +10,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -59,7 +60,7 @@ public class AdminController {
     @PostMapping("/approve/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
-    public ResponseEntity<Map<String, Object>> approve(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> approve(@PathVariable @NonNull Long id) {
         InfrastructureRequest request = requestRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Demande d'infrastructure non trouvée avec l'ID: " + id));
@@ -85,7 +86,7 @@ public class AdminController {
     @PostMapping("/reject/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
-    public ResponseEntity<Map<String, Object>> reject(@PathVariable Long id,
+    public ResponseEntity<Map<String, Object>> reject(@PathVariable @NonNull Long id,
                                                       @RequestBody(required = false) Map<String, String> payload) {
         InfrastructureRequest request = requestRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(

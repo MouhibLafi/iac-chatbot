@@ -6,6 +6,7 @@ import com.company.iacchatbot.dto.UserDto;
 import com.company.iacchatbot.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,7 +40,7 @@ public class UserController {
      */
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+    public ResponseEntity<?> getUserById(@PathVariable @NonNull Long id) {
         try {
             UserDto user = userService.getUserById(id);
             return ResponseEntity.ok(user);
@@ -56,7 +57,7 @@ public class UserController {
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<?> deleteUser(@PathVariable @NonNull Long id) {
         try {
             userService.deleteUser(id);
             return ResponseEntity.ok(new MessageResponse("Utilisateur supprimé avec succès!"));
@@ -73,7 +74,7 @@ public class UserController {
      */
     @PutMapping("/{id}/toggle")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> toggleUserEnabled(@PathVariable Long id) {
+    public ResponseEntity<?> toggleUserEnabled(@PathVariable @NonNull Long id) {
         try {
             UserDto user = userService.toggleUserEnabled(id);
             String message = user.getEnabled() ? "Utilisateur activé" : "Utilisateur désactivé";
@@ -92,7 +93,7 @@ public class UserController {
      */
     @PutMapping("/{id}/quota")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateQuota(@PathVariable Long id, @RequestBody QuotaRequest quotaRequest) {
+    public ResponseEntity<?> updateQuota(@PathVariable @NonNull Long id, @RequestBody QuotaRequest quotaRequest) {
         try {
             userService.updateQuota(id, quotaRequest);
             return ResponseEntity.ok(new MessageResponse("Quotas mis à jour avec succès!"));

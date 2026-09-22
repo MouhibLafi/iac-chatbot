@@ -2,8 +2,10 @@ package com.company.iacchatbot.service;
 
 import com.company.iacchatbot.dto.QuotaRequest;
 import com.company.iacchatbot.dto.UserDto;
+import com.company.iacchatbot.model.InfrastructureRequest;
 import com.company.iacchatbot.model.Role;
 import com.company.iacchatbot.model.User;
+import com.company.iacchatbot.repository.InfrastructureRequestRepository;
 import com.company.iacchatbot.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,10 +27,14 @@ import static org.mockito.Mockito.*;
  * Tests unitaires du UserService
  */
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private InfrastructureRequestRepository infrastructureRequestRepository;
 
     private UserService userService;
 
@@ -36,6 +42,7 @@ class UserServiceTest {
     void setUp() {
         userService = new UserService();
         ReflectionTestUtils.setField(userService, "userRepository", userRepository);
+        ReflectionTestUtils.setField(userService, "infrastructureRequestRepository", infrastructureRequestRepository);
     }
 
     private User createTestUser(Long id, String username, String email, Role role) {
@@ -142,15 +149,21 @@ class UserServiceTest {
 
     @Test
     void testDeleteUser() {
-        // Arrange
+        // Arrange : l'utilisateur a une demande liée (clé étrangère)
         User user = createTestUser(1L, "admin", "admin@test.com", Role.ADMIN);
+        InfrastructureRequest request = new InfrastructureRequest("VM test");
+        request.setUser(user);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(infrastructureRequestRepository.findByUserIdOrderByCreatedAtDesc(1L))
+                .thenReturn(List.of(request));
 
         // Act
         userService.deleteUser(1L);
 
-        // Assert
+        // Assert : la demande est détachée (historique conservé), puis l'utilisateur supprimé
         verify(userRepository, times(1)).findById(1L);
+        assertNull(request.getUser());
+        verify(infrastructureRequestRepository, times(1)).saveAll(any());
         verify(userRepository, times(1)).delete(user);
     }
 

@@ -1,5 +1,5 @@
 /**
- * Modèles liés au déploiement du code IaC généré (simulation ou réel).
+ * Modèles liés au déploiement réel du code IaC généré.
  * Endpoints backend : POST/GET/DELETE /api/deploy/{requestId}[...]
  * et actions admin (approve/reject) qui partagent le même format de réponse.
  */

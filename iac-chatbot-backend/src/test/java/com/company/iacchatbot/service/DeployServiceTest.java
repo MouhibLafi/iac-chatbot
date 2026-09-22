@@ -18,9 +18,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
- * Tests unitaires du DeployService (déploiement simulé - UC-06, UC-10)
+ * Tests unitaires du DeployService (déploiement réel - UC-06, UC-10)
  */
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class DeployServiceTest {
 
     @Mock
@@ -35,6 +36,9 @@ class DeployServiceTest {
     @Mock
     private NotificationService notificationService;
 
+    @Mock
+    private RealDeployExecutor realExecutor;
+
     @InjectMocks
     private DeployService deployService;
 
@@ -48,11 +52,21 @@ class DeployServiceTest {
     }
 
     @Test
-    void deploy_deploiementSimuleReussi_statutSuccessEtLogsCrees() {
+    void deploy_deploiementReelReussi_statutSuccessEtLogsCrees() {
         InfrastructureRequest req = demande("CODE_GENERATED");
         when(requestRepository.findById(1L)).thenReturn(Optional.of(req));
         when(requestRepository.save(any(InfrastructureRequest.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+        // L'exécuteur réel remonte les étapes via le callback
+        doAnswer(invocation -> {
+            RealDeployExecutor.StepCallback cb = invocation.getArgument(1);
+            cb.onStep("VALIDATION", "VBoxManage --version : OK");
+            cb.onStep("PLAN", "Plan : 1 VM à créer");
+            cb.onStep("APPLY", "VM créée");
+            cb.onStep("VERIFY", "VM vérifiée");
+            return null;
+        }).when(realExecutor).deploy(any(InfrastructureRequest.class),
+                any(RealDeployExecutor.StepCallback.class));
 
         InfrastructureRequest result = deployService.deploy(1L);
 

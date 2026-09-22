@@ -15,12 +15,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Exécuteur RÉEL des déploiements (UC-06, étape 5-6 du fonctionnement global).
  *
- * Actif uniquement quand deploy.mode=real (sinon DeployService reste en simulation).
+ * Utilisé par DeployService pour tous les déploiements.
  *
  * Cibles :
  *  - VM        -> VirtualBox sur la machine hôte (VBoxManage)
@@ -57,14 +58,35 @@ public class RealDeployExecutor {
             @Value("${deploy.oc-bin:oc}") String ocBin,
             @Value("${deploy.oc-server:}") String ocServer,
             @Value("${deploy.oc-token:}") String ocToken,
+            @Value("${deploy.oc-token-file:../openshift/oc-token.txt}") String ocTokenFile,
             @Value("${deploy.workdir:./deploy-work}") String workdir,
             @Value("${deploy.command-timeout-seconds:300}") long timeoutSeconds) {
         this.vboxManagePath = vboxManagePath;
         this.ocBin = ocBin;
         this.ocServer = ocServer;
-        this.ocToken = ocToken;
+        this.ocToken = resolveToken(ocToken, ocTokenFile);
         this.workdirBase = Path.of(workdir);
         this.timeoutSeconds = timeoutSeconds;
+    }
+
+    /**
+     * Token OpenShift : variable d'environnement OC_TOKEN en priorité,
+     * sinon lecture automatique du fichier (défaut ../openshift/oc-token.txt).
+     * Permet de lancer le backend avec simplement "mvn spring-boot:run".
+     */
+    private static String resolveToken(String ocToken, String ocTokenFile) {
+        if (ocToken != null && !ocToken.isBlank()) {
+            return ocToken;
+        }
+        try {
+            Path file = Path.of(ocTokenFile);
+            if (Files.exists(file)) {
+                return Files.readString(file, StandardCharsets.UTF_8).trim();
+            }
+        } catch (IOException e) {
+            log.warn("Impossible de lire le fichier de token OpenShift {} : {}", ocTokenFile, e.getMessage());
+        }
+        return ocToken == null ? "" : ocToken;
     }
 
     /**
@@ -90,7 +112,12 @@ public class RealDeployExecutor {
             callback.onStep("CANCEL", run(null, ocBin, "delete", "-f", manifest.toString(),
                     "--ignore-not-found=true"));
         } else {
-            String vmName = vmName(request);
+            String vmName = request.getResourceName();
+            if (vmName == null || vmName.isBlank()) {
+                callback.onStep("CANCEL",
+                        "Aucune VM VirtualBox associée à cette demande, rien à supprimer");
+                return;
+            }
             // Extinction si la VM tourne (échec ignoré : elle est peut-être déjà éteinte)
             runQuietly(vboxManagePath, "controlvm", vmName, "poweroff");
             callback.onStep("CANCEL", run(null, vboxManagePath, "unregistervm", vmName, "--delete"));
@@ -102,20 +129,21 @@ public class RealDeployExecutor {
     // ======================================================================
 
     private void deployVirtualBox(InfrastructureRequest request, StepCallback callback) {
-        String vmName = vmName(request);
         JsonNode params = parseParams(request);
         int cpu = params.path("cpu").asInt(2);
         int ramMb = params.path("ramGb").asInt(4) * 1024;
         int storageMb = params.path("storageGb").asInt(50) * 1024;
         String osType = osTypeFor(params.path("osImage").asText(""));
 
-        // 1. VALIDATION : VirtualBox opérationnel + nom de VM libre
+        // 1. VALIDATION : VirtualBox opérationnel + nom de VM unique (aléatoire)
         String version = run(null, vboxManagePath, "--version");
         String existing = run(null, vboxManagePath, "list", "vms");
+        String vmName = resolveVmName(request, existing);
         if (existing.contains("\"" + vmName + "\"")) {
             throw new IllegalStateException("La VM " + vmName + " existe déjà dans VirtualBox");
         }
-        callback.onStep("VALIDATION", "VirtualBox " + version.trim() + " opérationnel, nom de VM libre");
+        callback.onStep("VALIDATION",
+                "VirtualBox " + version.trim() + " opérationnel, nom de VM : " + vmName);
 
         // 2. PLAN : résumé des ressources qui vont être créées
         callback.onStep("PLAN", String.format(
@@ -183,9 +211,28 @@ public class RealDeployExecutor {
     // Utilitaires
     // ======================================================================
 
-    /** Nom de VM déterministe : iac-vm-<id> */
-    static String vmName(InfrastructureRequest request) {
-        return "iac-vm-" + request.getId();
+    /** Nom de VM : réutilise le nom stocké dans la demande, sinon génère iac-vm-<3 caractères aléatoires> */
+    static String resolveVmName(InfrastructureRequest request, String existingVms) {
+        if (request.getResourceName() != null && !request.getResourceName().isBlank()) {
+            return request.getResourceName();
+        }
+        String name;
+        do {
+            name = "iac-vm-" + randomSuffix();
+        } while (existingVms != null && existingVms.contains("\"" + name + "\""));
+        request.setResourceName(name);
+        return name;
+    }
+
+    /** Suffixe aléatoire de 3 caractères (lettres minuscules + chiffres) */
+    static String randomSuffix() {
+        String chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        StringBuilder sb = new StringBuilder(3);
+        for (int i = 0; i < 3; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 
     /** Mappe l'image OS demandée vers un ostype VirtualBox */

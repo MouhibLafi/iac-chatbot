@@ -1,4 +1,21 @@
-/* Styles globaux — reproduisent le design du prototype (styles.css) */
+/* ==================================================================
+   Styles globaux — thème moderne IaC Chatbot
+   ================================================================== */
+
+:root {
+  --primary: #667eea;
+  --primary-dark: #5a67d8;
+  --accent: #764ba2;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --ink: #1e293b;
+  --ink-soft: #64748b;
+  --card: rgba(255, 255, 255, 0.92);
+  --radius: 18px;
+  --shadow: 0 10px 30px rgba(31, 41, 55, 0.18);
+  --shadow-lg: 0 20px 50px rgba(31, 41, 55, 0.25);
+}
 
 * {
   margin: 0;
@@ -7,11 +24,33 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  /* Dégradé violet signature du projet */
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+  /* Dégradé signature animé + halos lumineux décoratifs */
+  background:
+    radial-gradient(ellipse 600px 400px at 15% 10%, rgba(255, 255, 255, 0.25), transparent),
+    radial-gradient(ellipse 500px 350px at 85% 90%, rgba(255, 255, 255, 0.15), transparent),
+    linear-gradient(135deg, #667eea, #764ba2, #d16a97, #667eea);
+  background-size: 100% 100%, 100% 100%, 300% 300%;
+  background-attachment: fixed;
+  animation: gradientShift 18s ease infinite;
   min-height: 100vh;
 }
+
+/* Le dégradé de fond se déplace doucement en continu */
+@keyframes gradientShift {
+  0%, 100% { background-position: 0 0, 0 0, 0% 50%; }
+  50% { background-position: 0 0, 0 0, 100% 50%; }
+}
+
+/* Barre de défilement discrète et moderne */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.45);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(102, 126, 234, 0.75); }
 
 /* Animations communes */
 @keyframes spin {
@@ -20,19 +59,18 @@ body {
 }
 
 @keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 12px rgba(102, 126, 234, 0.5); }
+  50% { box-shadow: 0 0 22px rgba(118, 75, 162, 0.7); }
 }
 
 /* Petit spinner réutilisable (boutons, chargements) */
@@ -54,16 +92,18 @@ body {
 .status-badge {
   display: inline-block;
   color: white;
-  padding: 4px 10px;
-  border-radius: 15px;
-  font-size: 0.8em;
-  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.78em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 
-  &.badge-success { background: #28a745; }
-  &.badge-info { background: #3498db; }
-  &.badge-running { background: #f39c12; }
-  &.badge-error { background: #dc3545; }
-  &.badge-pending { background: #764ba2; }
-  &.badge-warning { background: #ffc107; color: #333; }
+  &.badge-success { background: linear-gradient(135deg, #22c55e, #16a34a); }
+  &.badge-info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+  &.badge-running { background: linear-gradient(135deg, #f59e0b, #d97706); animation: pulse 1.6s infinite; }
+  &.badge-error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+  &.badge-pending { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+  &.badge-warning { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #451a03; }
 }

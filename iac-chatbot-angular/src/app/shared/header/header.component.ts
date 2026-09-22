@@ -1,11 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { AuthService } from '../../core/services/auth.service';
 
 /**
- * En-tête partagé : titre, nom d'utilisateur, badge de rôle,
- * navigation (Chat, Admin si administrateur) et bouton de déconnexion.
+ * En-tête partagé : titre, logo, et menu utilisateur déroulant
+ * (profil, navigation Chat/Historique/Admin, déconnexion).
  */
 @Component({
   selector: 'app-header',
@@ -16,8 +16,20 @@ import { AuthService } from '../../core/services/auth.service';
 export class HeaderComponent {
   protected readonly authService = inject(AuthService);
 
+  /** Menu utilisateur déroulant ouvert ou fermé */
+  protected readonly menuOpen = signal(false);
+
+  toggleMenu(): void {
+    this.menuOpen.update((open) => !open);
+  }
+
+  closeMenu(): void {
+    this.menuOpen.set(false);
+  }
+
   /** Déconnexion avec confirmation */
   logout(): void {
+    this.closeMenu();
     if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
       this.authService.logout();
     }

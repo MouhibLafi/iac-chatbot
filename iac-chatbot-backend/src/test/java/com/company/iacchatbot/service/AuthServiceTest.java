@@ -30,6 +30,7 @@ import static org.mockito.Mockito.*;
  * Tests unitaires du AuthService
  */
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class AuthServiceTest {
 
     @Mock

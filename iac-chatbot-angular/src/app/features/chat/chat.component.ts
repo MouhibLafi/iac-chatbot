@@ -11,6 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
 import { HeaderComponent } from '../../shared/header/header.component';
+import { AuthService } from '../../core/services/auth.service';
 import { ChatService } from '../../core/services/chat.service';
 import { WebSocketService } from '../../core/services/websocket.service';
 import { DeployService } from '../../core/services/deploy.service';
@@ -46,6 +47,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   private readonly chatService = inject(ChatService);
   protected readonly wsService = inject(WebSocketService);
   private readonly deployService = inject(DeployService);
+  private readonly authService = inject(AuthService);
 
   @ViewChild('messagesContainer') private messagesContainer?: ElementRef<HTMLDivElement>;
 
@@ -69,6 +71,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   private progressSubscription?: Subscription;
   private healthCheckInterval?: ReturnType<typeof setInterval>;
+  private typewriterIntervals: ReturnType<typeof setInterval>[] = [];
 
   ngOnInit(): void {
     // Connexion WebSocket STOMP pour suivre la progression en temps réel
@@ -94,6 +97,41 @@ export class ChatComponent implements OnInit, OnDestroy {
     if (this.healthCheckInterval) {
       clearInterval(this.healthCheckInterval);
     }
+    this.typewriterIntervals.forEach(clearInterval);
+  }
+
+  /** Initiale de l'utilisateur courant pour son avatar */
+  protected userInitial(): string {
+    return this.authService.currentUser()?.username?.charAt(0).toUpperCase() ?? 'U';
+  }
+
+  /** Affichage progressif du texte du bot (effet streaming type ChatGPT) */
+  private startTypewriter(message: ChatMessage, fullText: string): void {
+    let index = 0;
+    let current = message; // le message est remplacé par une copie à chaque tick
+    const interval = setInterval(() => {
+      index += 2;
+      const done = index >= fullText.length;
+      const visibleText = done ? fullText : fullText.slice(0, index);
+      this.messages.update((msgs) => {
+        const i = msgs.indexOf(current);
+        if (i === -1) {
+          return msgs;
+        }
+        current = { ...msgs[i], visibleText };
+        return [...msgs.slice(0, i), current, ...msgs.slice(i + 1)];
+      });
+      if (done) {
+        clearInterval(interval);
+      }
+    }, 15);
+    this.typewriterIntervals.push(interval);
+  }
+
+  /** Envoie un exemple de demande (puces cliquables du message de bienvenue) */
+  sendExample(text: string): void {
+    this.userMessage = text;
+    this.sendMessage();
   }
 
   /** Envoi du message au backend */
@@ -113,14 +151,14 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     this.chatService.sendMessage(message, this.targetPlatform).subscribe({
       next: (response) => {
-        this.messages.update((msgs) => [
-          ...msgs,
-          { kind: 'bot', text: response.message, response },
-        ]);
+        const botMessage: ChatMessage = { kind: 'bot', text: response.message, response, visibleText: '' };
+        this.messages.update((msgs) => [...msgs, botMessage]);
         // Réponse HTTP reçue : on masque la barre de progression
         this.progress.set(null);
         this.loading.set(false);
         this.scrollToBottom();
+        // Effet streaming : le texte du bot s'affiche progressivement
+        this.startTypewriter(botMessage, response.message ?? '');
       },
       error: () => {
         this.messages.update((msgs) => [
@@ -193,7 +231,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     return status === 'success' || status === 'completed' || status === 'CODE_GENERATED';
   }
 
-  /** Lance le déploiement du code généré (simulation ou réel) */
+  /** Lance le déploiement réel du code généré */
   deployCode(message: ChatMessage): void {
     const requestId = message.response?.requestId;
     if (!requestId || message.deploying) {

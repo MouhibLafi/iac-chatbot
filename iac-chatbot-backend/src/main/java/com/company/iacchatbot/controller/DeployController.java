@@ -7,10 +7,9 @@ import com.company.iacchatbot.repository.InfrastructureRequestRepository;
 import com.company.iacchatbot.repository.UserRepository;
 import com.company.iacchatbot.service.DeployService;
 import jakarta.persistence.EntityNotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -21,15 +20,13 @@ import java.util.Map;
 
 /**
  * Controller de déploiement (UC-06, UC-10).
- * Mode simulation ou réel selon la propriété deploy.mode.
+ * Exécution réelle via RealDeployExecutor (VirtualBox / OpenShift).
  * L'utilisateur doit être propriétaire de la demande ou ADMIN.
  */
 @RestController
 @RequestMapping("/api/deploy")
 @CrossOrigin(origins = "*")
 public class DeployController {
-
-    private static final Logger log = LoggerFactory.getLogger(DeployController.class);
 
     private final DeployService deployService;
     private final InfrastructureRequestRepository requestRepository;
@@ -44,11 +41,11 @@ public class DeployController {
     }
 
     /**
-     * Lance un déploiement (simulation ou réel selon deploy.mode)
+     * Lance un déploiement réel
      * POST /api/deploy/{requestId}
      */
     @PostMapping("/{requestId}")
-    public ResponseEntity<Map<String, Object>> deploy(@PathVariable Long requestId) {
+    public ResponseEntity<Map<String, Object>> deploy(@PathVariable @NonNull Long requestId) {
         checkOwnership(requestId);
         InfrastructureRequest request = deployService.deploy(requestId);
 
@@ -65,7 +62,7 @@ public class DeployController {
      * GET /api/deploy/{requestId}/status
      */
     @GetMapping("/{requestId}/status")
-    public ResponseEntity<Map<String, Object>> getStatus(@PathVariable Long requestId) {
+    public ResponseEntity<Map<String, Object>> getStatus(@PathVariable @NonNull Long requestId) {
         checkOwnership(requestId);
         InfrastructureRequest request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -79,11 +76,11 @@ public class DeployController {
     }
 
     /**
-     * Annule un déploiement (suppression réelle ou simulée des ressources)
+     * Annule un déploiement (suppression réelle des ressources)
      * DELETE /api/deploy/{requestId}
      */
     @DeleteMapping("/{requestId}")
-    public ResponseEntity<Map<String, Object>> cancel(@PathVariable Long requestId) {
+    public ResponseEntity<Map<String, Object>> cancel(@PathVariable @NonNull Long requestId) {
         checkOwnership(requestId);
         InfrastructureRequest request = deployService.cancel(requestId);
 
@@ -97,7 +94,7 @@ public class DeployController {
     /**
      * Vérifie que l'utilisateur courant est propriétaire de la demande ou ADMIN
      */
-    private void checkOwnership(Long requestId) {
+    private void checkOwnership(@NonNull Long requestId) {
         User currentUser = getCurrentUser();
         if (currentUser == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentification requise");

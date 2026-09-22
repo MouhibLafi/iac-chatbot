@@ -17,6 +17,7 @@ import static org.mockito.Mockito.*;
  * Tests unitaires du ProgressNotificationService
  */
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class ProgressNotificationServiceTest {
 
     @Mock

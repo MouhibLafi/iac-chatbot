@@ -26,12 +26,21 @@
         <!-- Message de bienvenue affiché tant que le fil est vide -->
         @if (messages().length === 0) {
           <div class="welcome-message">
-            <h3>👋 Bienvenue sur le Chatbot IaC !</h3>
-            <p>Décrivez l'infrastructure souhaitée en langage naturel :</p>
+            <h3>👋 Bienvenue sur Geniac !</h3>
+            <p>Décrivez l'infrastructure souhaitée en langage naturel — ou cliquez sur un exemple :</p>
             <ul>
-              <li>« Crée une VM Ubuntu 22.04 avec 4 CPU et 8 Go de RAM sur vSphere »</li>
-              <li>« Déploie 3 replicas de nginx sur OpenShift »</li>
-              <li>« VM Windows Server 2022 avec 100 Go de stockage »</li>
+              <li class="example-chip" (click)="sendExample('Crée une VM Ubuntu 22.04 avec 4 CPU et 8 Go de RAM sur vSphere')">
+                « Crée une VM Ubuntu 22.04 avec 4 CPU et 8 Go de RAM sur vSphere »
+                <span class="chip-arrow">➜</span>
+              </li>
+              <li class="example-chip" (click)="sendExample('Déploie 3 replicas de nginx sur OpenShift')">
+                « Déploie 3 replicas de nginx sur OpenShift »
+                <span class="chip-arrow">➜</span>
+              </li>
+              <li class="example-chip" (click)="sendExample('VM Windows Server 2022 avec 100 Go de stockage')">
+                « VM Windows Server 2022 avec 100 Go de stockage »
+                <span class="chip-arrow">➜</span>
+              </li>
             </ul>
           </div>
         }
@@ -42,10 +51,12 @@
             <!-- Bulle utilisateur -->
             <div class="message message-user">
               <div class="message-content">{{ message.text }}</div>
+              <div class="avatar avatar-user">{{ userInitial() }}</div>
             </div>
           } @else if (message.kind === 'bot' && message.response) {
-            <!-- Bulle bot : statut, message, paramètres extraits, code généré -->
+            <!-- Bulle bot : avatar, statut, message, paramètres extraits, code généré -->
             <div class="message message-bot">
+              <div class="avatar avatar-bot"><img src="geniac-logo.svg" alt="Geniac"></div>
               <div class="message-content">
                 <div class="message-header">
                   🤖 Assistant
@@ -62,7 +73,7 @@
                 <p
                   class="bot-text"
                   [class.clarification]="isClarification(message.response)"
-                >{{ message.response.message }}</p>
+                >{{ message.visibleText ?? message.response.message }}<span class="stream-cursor" [class.done]="message.visibleText === message.response.message"></span></p>
 
                 <!-- Badges des paramètres extraits -->
                 @if (paramBadges(message.response.extractedParams).length > 0) {
@@ -136,7 +147,7 @@
                         </span>
                         <span class="deploy-message">{{ result.message }}</span>
                         <button type="button" class="logs-btn" (click)="toggleLogs(message)">
-                          {{ message.showLogs ? '📜 Masquer les logs' : '📜 Voir les logs' }}
+                          {{ message.showLogs ? 'Masquer les logs' : 'Voir les logs' }}
                         </button>
                         @if (result.status === 'SUCCESS') {
                           <button type="button" class="cancel-btn" (click)="cancelDeploy(message)">
@@ -172,6 +183,7 @@
              ou spinner classique en repli si le WebSocket n'est pas connecté -->
         @if (loading()) {
           <div class="message message-bot">
+            <div class="avatar avatar-bot"><img src="geniac-logo.svg" alt="Geniac"></div>
             <div class="message-content typing">
               @if (wsService.connected() && progress(); as p) {
                 <div class="progress-wrapper">
@@ -185,7 +197,8 @@
                   </div>
                 </div>
               } @else {
-                <span class="loader"></span> Génération du code en cours...
+                <span class="typing-dots"><span></span><span></span><span></span></span>
+                Génération du code en cours...
               }
             </div>
           </div>

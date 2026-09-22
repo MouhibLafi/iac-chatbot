@@ -6,7 +6,7 @@ import { API_BASE_URL } from '../api.config';
 import { DeployResponse, DeployStatusResponse } from '../../shared/models/deploy.model';
 
 /**
- * Service de déploiement du code IaC généré (simulation ou réel).
+ * Service de déploiement réel du code IaC généré.
  * Réservé au propriétaire de la demande ou à un administrateur.
  * La progression est diffusée en temps réel sur /topic/progress (WebSocket).
  */

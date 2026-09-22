@@ -63,14 +63,7 @@
         </dependency>
 
         <!-- Database -->
-        <!-- H2 pour développement (GRATUIT) -->
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
-        <!-- MySQL Community pour production (GRATUIT) -->
+        <!-- MySQL Community (GRATUIT) — base unique du projet -->
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>

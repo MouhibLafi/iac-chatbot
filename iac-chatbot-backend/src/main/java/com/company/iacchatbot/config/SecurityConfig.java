@@ -65,8 +65,8 @@ public class SecurityConfig {
                 // Endpoints publics (pas d'authentification requise)
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/chatbot/test", "/api/chatbot/health").permitAll()
-                .requestMatchers("/h2-console/**").permitAll()
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/swagger-ui.html", "/swagger-ui/**",
+                        "/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 // Endpoint WebSocket STOMP (handshake SockJS)
                 .requestMatchers("/ws/**").permitAll()
@@ -78,7 +78,7 @@ public class SecurityConfig {
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
-        // Pour H2 Console (développement uniquement)
+        // Autorise les frames same-origin (pages internes de développement)
         http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
 
         return http.build();

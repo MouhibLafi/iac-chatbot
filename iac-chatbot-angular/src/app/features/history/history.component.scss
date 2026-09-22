@@ -1,4 +1,4 @@
-/* Page Historique — carte blanche arrondie, style cohérent avec le prototype */
+/* Page Historique — panneau en verre dépoli, tableau moderne */
 
 .page-container {
   max-width: 1400px;
@@ -7,138 +7,148 @@
 }
 
 .history-panel {
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(31, 41, 55, 0.22);
   padding: 30px;
 
   h2 {
-    color: #667eea;
-    margin-bottom: 20px;
+    font-size: 1.5em;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 22px;
   }
 }
 
 /* Filtres */
 .filters {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
   margin-bottom: 20px;
 }
 
 .filter-select {
-  padding: 10px 12px;
+  padding: 10px 14px;
   border: 2px solid #e2e8f0;
-  border-radius: 10px;
-  background: white;
-  font-size: 14px;
-  color: #4a5568;
+  border-radius: 12px;
+  background: #f8fafc;
+  font-size: 0.9em;
+  font-weight: 500;
+  color: #334155;
   cursor: pointer;
   outline: none;
-  transition: border-color 0.2s;
+  transition: all 0.25s ease;
 
   &:focus {
     border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
   }
 }
 
 .refresh-btn {
-  background: #667eea;
-  color: white;
   border: none;
-  padding: 10px 18px;
-  border-radius: 10px;
-  cursor: pointer;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 12px;
   font-size: 0.9em;
   font-weight: 600;
-  transition: all 0.3s;
+  cursor: pointer;
+  transition: all 0.25s ease;
 
   &:hover {
-    background: #5568d3;
     transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(102, 126, 234, 0.4);
   }
 }
 
-/* Tableau de l'historique */
+/* États de chargement / vide */
+.loading,
+.empty {
+  text-align: center;
+  color: #64748b;
+  padding: 50px 20px;
+  font-size: 1em;
+  font-weight: 500;
+}
+
+/* Tableau moderne */
 .table-wrapper {
   overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
 }
 
 .history-table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 0.92em;
 
-  th {
+  thead th {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    color: #4338ca;
     text-align: left;
-    padding: 12px;
-    background: #f8f9fa;
-    color: #667eea;
-    font-weight: 600;
-    border-bottom: 2px solid #e0e0e0;
+    padding: 14px 16px;
+    font-size: 0.82em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #e2e8f0;
   }
 
-  td {
-    padding: 12px;
-    border-bottom: 1px solid #eee;
-    color: #333;
+  tbody td {
+    padding: 13px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
   }
 }
 
 .request-row {
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s ease;
 
   &:hover {
-    background: #f8f9fa;
+    background: rgba(102, 126, 234, 0.05);
   }
 }
 
 .col-date {
   white-space: nowrap;
-  color: #666;
-  font-size: 0.9em;
+  color: #64748b;
+  font-size: 0.88em;
 }
-
-/* Badges de statut colorés (appliqués via la liaison [class] :
-   les classes badge-* doivent être autonomes) */
-.badge-success,
-.badge-error,
-.badge-warning,
-.badge-info,
-.badge-running,
-.badge-pending {
-  display: inline-block;
-  color: white;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.8em;
-  font-weight: bold;
-  white-space: nowrap;
-}
-
-.badge-success { background: #28a745; }  /* vert : SUCCESS */
-.badge-error { background: #dc3545; }    /* rouge : FAILED / CANCELLED */
-.badge-warning { background: #f39c12; }  /* orange : clarification */
-.badge-info { background: #3498db; }     /* bleu : completed / CODE_GENERATED */
-.badge-running { background: #e67e22; }  /* orange : RUNNING */
-.badge-pending { background: #764ba2; }  /* violet : PENDING_APPROVAL */
 
 /* Ligne de détail dépliée */
-.detail-row > td {
-  background: #f8f9fa;
-  border-bottom: 2px solid #e0e0e0;
+.detail-row td {
+  background: #f8fafc;
+  padding: 0;
 }
 
 .detail-content {
-  animation: slideIn 0.3s ease-out;
+  padding: 20px 24px;
+  animation: slideIn 0.3s ease;
 }
 
 .detail-section {
-  margin-bottom: 15px;
+  margin-bottom: 16px;
+
+  strong {
+    color: #475569;
+    font-size: 0.9em;
+  }
 
   p {
     margin-top: 6px;
-    color: #555;
+    color: #334155;
+    line-height: 1.55;
   }
 }
 
@@ -150,83 +160,71 @@
 }
 
 .param-badge {
-  background: #eef0fd;
-  color: #333;
-  border: 1px solid #667eea33;
+  background: rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.22);
+  color: #4338ca;
   padding: 5px 12px;
-  border-radius: 15px;
-  font-size: 0.85em;
-}
+  border-radius: 999px;
+  font-size: 0.82em;
+  font-weight: 500;
 
-.param-label {
-  color: #667eea;
-  font-weight: 600;
+  .param-label {
+    font-weight: 700;
+  }
 }
 
 .code-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
-}
-
-.code-block {
-  background: #1e1e1e;
-  color: #d4d4d4;
-  padding: 15px;
-  border-radius: 8px;
-  margin-top: 10px;
-  font-family: 'Courier New', monospace;
-  font-size: 0.85em;
-  overflow-x: auto;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  max-height: 350px;
-  overflow-y: auto;
+  margin-bottom: 8px;
 }
 
 .copy-btn {
-  background: #667eea;
-  color: white;
   border: none;
-  padding: 5px 15px;
-  border-radius: 5px;
+  background: rgba(102, 126, 234, 0.1);
+  color: #5a67d8;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.82em;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 0.85em;
-  transition: background 0.3s;
+  transition: all 0.25s ease;
 
   &:hover {
-    background: #5568d3;
+    background: rgba(102, 126, 234, 0.22);
+    transform: translateY(-1px);
   }
 
   &.copied {
-    background: #28a745;
+    background: #dcfce7;
+    color: #15803d;
   }
 }
 
-.detail-meta {
-  color: #999;
+.code-block {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  padding: 18px;
+  border-radius: 14px;
+  font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
   font-size: 0.8em;
-  margin-top: 10px;
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
-.loading,
-.empty {
-  text-align: center;
-  padding: 40px;
-  color: #666;
-}
-
-.empty {
-  font-style: italic;
+.detail-meta {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed #e2e8f0;
+  color: #94a3b8;
+  font-size: 0.82em;
 }
 
 @media (max-width: 768px) {
   .history-panel {
-    padding: 20px;
-  }
-
-  .col-date {
-    white-space: normal;
+    padding: 18px;
   }
 }

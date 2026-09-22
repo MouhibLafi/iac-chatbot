@@ -1,6 +1,7 @@
 package com.company.iacchatbot.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -44,8 +45,9 @@ public class InfrastructureRequest {
 
     /**
      * Utilisateur propriétaire de la demande (nullable pour compatibilité)
+     * EAGER : le username est exposé en JSON sur tous les endpoints
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = true)
     @JsonIgnore
     private User user;
@@ -61,6 +63,13 @@ public class InfrastructureRequest {
      */
     @Column(name = "error_message", columnDefinition = "TEXT")
     private String errorMessage;
+
+    /**
+     * Nom réel de la ressource créée (ex: VM VirtualBox "iac-vm-x7k"),
+     * généré au déploiement et réutilisé pour la suppression
+     */
+    @Column(name = "resource_name", length = 100)
+    private String resourceName;
 
     /**
      * Logs de déploiement associés (traçabilité UC-10)
@@ -175,6 +184,20 @@ public class InfrastructureRequest {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public String getResourceName() {
+        return resourceName;
+    }
+
+    public void setResourceName(String resourceName) {
+        this.resourceName = resourceName;
+    }
+
+    /** Nom du propriétaire exposé en JSON (colonne Utilisateur côté admin) */
+    @JsonProperty("username")
+    public String getOwnerUsername() {
+        return user != null ? user.getUsername() : null;
     }
 
     public List<DeploymentLog> getLogs() {

@@ -1,4 +1,4 @@
-# 🚀 IaC Chatbot — Infrastructure as Code pilotée par Chatbot Intelligent
+# 🧞 Geniac — Infrastructure as Code pilotée par Chatbot Intelligent
 
 Plateforme web permettant de **générer et déployer réellement** de l'infrastructure
 (VMs et conteneurs) à partir de demandes en langage naturel (français/anglais),
@@ -18,7 +18,7 @@ grâce à une IA **100 % locale**.
 | Génération IaC | Thymeleaf (mode TEXT) : Terraform vSphere, YAML OpenShift, YAML KubeVirt |
 | Déploiement réel | `RealDeployExecutor` : VBoxManage (VMs VirtualBox) + oc (OpenShift/MicroShift) |
 | Temps réel | WebSocket STOMP (progression de la génération en direct) |
-| Base de données | H2 (dev) / MySQL Community (prod, via Docker Compose) |
+| Base de données | MySQL 8.0 Community local (XAMPP / phpMyAdmin) — base `iac_chatbot` |
 
 ## Fonctionnement
 
@@ -33,23 +33,22 @@ grâce à une IA **100 % locale**.
 
 ### Prérequis
 - Java 21, Maven 3.9+, Node.js 18+
+- **MySQL (XAMPP) démarré** — la base `iac_chatbot` est créée automatiquement
 - Ollama avec le modèle llama3 (`ollama pull llama3`)
 - VirtualBox (création réelle des VMs)
 - La VM `microshift` (cluster OpenShift, déjà installée — voir `openshift/`)
 
 ```powershell
+# 0. Base de données : démarrer MySQL dans le panneau de contrôle XAMPP
+
 # 1. IA locale
 ollama serve
 
 # 2. Cluster OpenShift (MicroShift) — attendre ~2 min le démarrage
 & "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" startvm microshift --type headless
 
-# 3. Backend en mode REEL (port 8081)
+# 3. Backend en mode REEL (port 8081, base MySQL)
 cd iac-chatbot-backend
-$env:DEPLOY_MODE="real"
-$env:VBOXMANAGE_PATH="C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
-$env:OC_BIN="C:\Users\mouhi\Desktop\iac test\openshift\oc.exe"
-$env:OC_SERVER="https://127.0.0.1:16443"
 $env:OC_TOKEN=Get-Content "C:\Users\mouhi\Desktop\iac test\openshift\oc-token.txt"
 mvn spring-boot:run
 
@@ -59,9 +58,10 @@ npm install   # première fois uniquement
 npx ng serve  # http://localhost:4200
 ```
 
-Le backend doit tourner **sur la machine hôte** (pas dans Docker) car VBoxManage et
-oc sont des binaires Windows. Sans les variables `DEPLOY_MODE/OC_*`, le backend
-démarre en mode **simulation** (aucune ressource réelle créée).
+Le backend doit tourner **sur la machine hôte** car VBoxManage et oc sont des
+binaires Windows. Les déploiements sont **toujours réels**. Les chemins de
+VBoxManage/oc et l'adresse du cluster ont des valeurs par défaut dans
+`application.properties` — seul `OC_TOKEN` (secret) doit être fourni.
 
 ### Connexion
 
@@ -80,8 +80,10 @@ démarre en mode **simulation** (aucune ressource réelle créée).
 
 | Document | Description |
 |---|---|
-| [Cahier_des_Charges_IaC_Chatbot_FINAL.pdf](Cahier_des_Charges_IaC_Chatbot_FINAL.pdf) | Cahier des charges final (version officielle) |
-| [Architecture_IaC_Chatbot_UML_FINALE.pdf](Architecture_IaC_Chatbot_UML_FINALE.pdf) | Architecture et diagrammes UML |
+| [GUIDE_DEMARRAGE.md](GUIDE_DEMARRAGE.md) | 🚀 Lancement pas à pas + envoi à l'encadrant |
+| [Cahier_des_Charges_Geniac.md](Cahier_des_Charges_Geniac.md) | Cahier des charges final (version livrée) |
+| [Architecture_Geniac.md](Architecture_Geniac.md) | Architecture et diagrammes UML (PlantUML) |
+| [Rapport_de_Stage_Geniac.md](Rapport_de_Stage_Geniac.md) | Rapport de stage complet |
 | [Infrastructure as Code & Automation 1.pdf](<Infrastructure as Code & Automation 1.pdf>) | Document officiel de la société |
 
 ## API principale
@@ -101,20 +103,8 @@ démarre en mode **simulation** (aucune ressource réelle créée).
 
 ```powershell
 cd iac-chatbot-backend
-mvn test              # 59 tests unitaires (génération IaC, LLM, déploiement, controller)
+mvn test              # 61 tests unitaires (génération IaC, LLM, déploiement, controller)
 ```
-
-## Déploiement Docker (production, mode simulation)
-
-```powershell
-# Copier et adapter les variables
-copy .env.example .env
-
-# Lancer toute la stack (MySQL + Backend + Frontend)
-docker compose up -d
-```
-
-Application : http://localhost (frontend) — API : http://localhost:8082
 
 ## Cluster OpenShift local (MicroShift)
 

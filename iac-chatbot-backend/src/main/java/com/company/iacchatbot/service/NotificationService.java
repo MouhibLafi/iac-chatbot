@@ -32,7 +32,8 @@ public class NotificationService {
      * Envoie une notification Discord. Si aucune URL n'est configurée, log INFO seulement.
      */
     public void sendDiscordNotification(String message) {
-        if (discordWebhookUrl == null || discordWebhookUrl.isBlank()) {
+        String url = discordWebhookUrl;
+        if (url == null || url.isBlank()) {
             log.info("Notification Discord (webhook non configuré): {}", message);
             return;
         }
@@ -41,7 +42,7 @@ public class NotificationService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Map<String, String>> request =
                     new HttpEntity<>(Map.of("content", message), headers);
-            restTemplate.postForEntity(discordWebhookUrl, request, String.class);
+            restTemplate.postForEntity(url, request, String.class);
             log.info("Notification Discord envoyée: {}", message);
         } catch (Exception e) {
             log.warn("Echec de l'envoi de la notification Discord: {}", e.getMessage());

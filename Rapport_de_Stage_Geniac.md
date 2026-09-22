@@ -1,5 +1,5 @@
 ---
-title: "Rapport de Stage"
+title: "Rapport de Stage — Geniac"
 subtitle: "Infrastructure as Code & Automation pilotée par Chatbot Intelligent"
 author: "Étudiant : [Votre Nom]"
 date: "Année universitaire 2025-2026"
@@ -17,16 +17,20 @@ Je remercie également l'ensemble de l'équipe pour son accueil et sa confiance.
 
 # Résumé
 
-Ce rapport présente la conception et la réalisation d'une plateforme d'automatisation
-d'infrastructure pilotée par un chatbot intelligent. La plateforme permet de créer,
-configurer et gérer des machines virtuelles et des conteneurs à partir de demandes
-exprimées en langage naturel (français ou anglais), sans expertise technique préalable.
+Ce rapport présente la conception et la réalisation de **Geniac**, une plateforme
+d'automatisation d'infrastructure pilotée par un chatbot intelligent. La plateforme
+permet de créer, configurer et gérer des machines virtuelles et des conteneurs à partir
+de demandes exprimées en langage naturel (français ou anglais), sans expertise technique
+préalable.
 
-La solution repose sur une architecture moderne : frontend Angular, backend Spring Boot
-sécurisé par JWT, intelligence artificielle 100 % locale (Ollama + Llama 3), génération
-de code Infrastructure as Code via des templates Thymeleaf (Terraform, YAML OpenShift,
-KubeVirt), et un pipeline de déploiement réel exécutant les ressources sur VirtualBox
-(machines virtuelles) et sur un cluster OpenShift local (MicroShift).
+La solution repose sur une architecture moderne : frontend Angular (interface
+conversationnelle style ChatGPT avec avatars et affichage en streaming), backend
+Spring Boot sécurisé par JWT, intelligence artificielle 100 % locale (Ollama + Llama 3),
+génération de code Infrastructure as Code via des templates Thymeleaf (Terraform,
+YAML OpenShift, KubeVirt), et un pipeline de **déploiement 100 % réel** exécutant les
+ressources sur VirtualBox (machines virtuelles) et sur un cluster OpenShift local
+(MicroShift). Les données sont persistées dans une base **MySQL locale** (XAMPP,
+consultable via phpMyAdmin).
 
 **Mots-clés :** Infrastructure as Code, Chatbot, IA locale, Spring Boot, Angular,
 Terraform, OpenShift, VirtualBox, DevOps.
@@ -53,13 +57,14 @@ d'automatisation sous-jacents ?
 
 ## Solution proposée
 
-Une plateforme web dont le point d'entrée unique est un **chatbot intelligent** capable de :
+**Geniac** : une plateforme web dont le point d'entrée unique est un **chatbot
+intelligent** capable de :
 
 - comprendre une demande en langage naturel (français/anglais) ;
 - identifier le type de ressource (VM ou conteneur) et la plateforme cible ;
 - extraire les paramètres techniques (CPU, RAM, stockage, image, réseau) ;
 - générer dynamiquement le code IaC approprié ;
-- valider et exécuter le déploiement réel de la ressource ;
+- valider et exécuter le **déploiement réel** de la ressource ;
 - journaliser l'ensemble des opérations (traçabilité).
 
 ## Méthodologie de travail
@@ -108,7 +113,7 @@ Deux environnements d'exécution sont ciblés par le document officiel :
 | UC-05 | Visualiser le code généré | Affichage du Terraform/YAML produit |
 | UC-06 | Confirmer le déploiement | Exécution réelle du code généré |
 | UC-07 | Clarification | Rejet des combinaisons invalides (ex. conteneur sur vSphere) |
-| UC-08 | Consulter l'historique | Liste des demandes passées |
+| UC-08 | Consulter l'historique | Liste des demandes passées (persistante) |
 | UC-09 | Dashboard | Statistiques et suivi |
 | UC-10 | Suivi temps réel | Progression du déploiement via WebSocket |
 | UC-11 | Gérer les utilisateurs | Administration (ADMIN) |
@@ -120,6 +125,7 @@ Deux environnements d'exécution sont ciblés par le document officiel :
 - **Sécurité** : JWT, hashage BCrypt, aucun secret en dur, rôles ;
 - **Performance** : génération du code IaC < 500 ms ;
 - **Fiabilité** : journalisation complète, gestion d'erreurs standardisée ;
+- **Persistance** : aucune donnée perdue au redémarrage (base fichier/MySQL) ;
 - **Maintenabilité** : architecture en couches, tests automatisés, documentation Swagger ;
 - **Confidentialité** : IA 100 % locale, aucune donnée transmise à l'extérieur ;
 - **Coût** : 0 € — uniquement des composants open-source.
@@ -140,11 +146,16 @@ Deux environnements d'exécution sont ciblés par le document officiel :
 *Alternative écartée :* React — plus libre mais moins structurant pour un projet
 d'entreprise de cette taille.
 
+L'interface livrée adopte les codes des assistants IA modernes (ChatGPT/Claude) :
+avatars (logo Geniac pour l'assistant, initiale pour l'utilisateur), affichage
+progressif des réponses (effet streaming), exemples de demandes cliquables, menu
+utilisateur déroulant et design « glassmorphism ».
+
 ## 2.2 Backend : Spring Boot 3.2 (Java 21)
 
 - Standard de l'industrie pour les API d'entreprise ;
 - **Spring Security + JWT** : authentification stateless ;
-- **Spring Data JPA** : persistance (H2 en dev, MySQL en prod) ;
+- **Spring Data JPA** : persistance (MySQL local) ;
 - **Spring AI** : intégration native d'Ollama ;
 - **Thymeleaf** : génération de texte (templates IaC) ;
 - Tests : JUnit 5 + Mockito.
@@ -185,15 +196,14 @@ OpenShift Local (CRC) exige Hyper-V, absent de Windows 11 Famille. La solution r
 dans une VM VirtualBox AlmaLinux 9. C'est un **vrai OpenShift** : même API, commande
 `oc`, Routes, conteneurs réels.
 
-## 2.6 Base de données
+## 2.6 Base de données : MySQL
 
-- **H2** (développement) : en mémoire, zéro installation ;
-- **MySQL Community 8.0** (production) : gratuit, fiable, déployé via Docker Compose.
-
-## 2.7 Conteneurisation : Docker Compose
-
-La stack complète (backend, frontend nginx, MySQL) est décrite dans un
-`docker-compose.yml` : déploiement reproductible en une commande.
+- **MySQL Community 8.0 local** (XAMPP, base `iac_chatbot`) : base unique du projet —
+  utilisateurs, demandes et logs conservés entre les redémarrages ;
+- **phpMyAdmin** : consultation graphique des données (`users`, `infrastructure_requests`,
+  `deployment_logs`) — très utile en démonstration ;
+- **Profil `prod`** : même MySQL, prêt pour un déploiement serveur (hôte configurable
+  par variables d'environnement).
 
 \newpage
 
@@ -207,7 +217,7 @@ La stack complète (backend, frontend nginx, MySQL) est décrite dans un
 | API | Spring Security, JWT Filter, CORS | Authentification, autorisation |
 | Application | Controllers, Services Spring Boot | Logique métier, orchestration |
 | Intelligence | Ollama (Llama 3), Thymeleaf | NLP local, extraction, génération IaC |
-| Données | Spring Data JPA, H2 / MySQL | Persistance des demandes et logs |
+| Données | Spring Data JPA, MySQL | Persistance des demandes et logs |
 | Exécution | RealDeployExecutor (VBoxManage, oc) | Pipeline de déploiement réel |
 | Infrastructure | VirtualBox, MicroShift/OpenShift | VMs et conteneurs réels |
 
@@ -225,7 +235,7 @@ d'exécution (VALIDATION → PLAN → APPLY → VERIFY).
 2. Le frontend envoie le message au backend (`POST /api/chatbot/process`, JWT) ;
 3. `LlmService` interroge Ollama (local) et extrait les paramètres JSON ;
 4. `IaCGeneratorService` génère le code via le template Thymeleaf ;
-5. La demande et le code sont persistés (H2/MySQL) ;
+5. La demande et le code sont persistés (MySQL) ;
 6. L'utilisateur confirme (`POST /api/deploy/{id}`) ;
 7. `DeployService` délègue à `RealDeployExecutor` qui exécute réellement
    VBoxManage (création VM) ou `oc apply` (OpenShift) ;
@@ -234,23 +244,28 @@ d'exécution (VALIDATION → PLAN → APPLY → VERIFY).
 
 ## 3.4 Modèle de données
 
-- **User** : id, username, email, password (BCrypt), rôle (USER/ADMIN) ;
+- **User** : id, username, email, password (BCrypt), rôle (USER/ADMIN), quotas, enabled ;
 - **InfrastructureRequest** : id, userMessage, resourceType (VM/CONTAINER),
   extractedParams (JSON), generatedCode, targetPlatform (VSPHERE/OPENSHIFT),
-  status, dates, errorMessage, utilisateur propriétaire ;
+  **resourceName** (nom réel de la ressource, ex. `iac-vm-x7k`), status, dates,
+  errorMessage, utilisateur propriétaire ;
 - **DeploymentLog** : id, demande associée, étape, niveau, message, timestamp.
 
-## 3.5 Pipeline de déploiement
+Le champ `resourceName` stocke le nom unique de la ressource créée (suffixe de 3
+caractères aléatoires). Il garantit l'absence de collision entre déploiements et
+permet à l'annulation de supprimer exactement la bonne ressource.
+
+## 3.5 Pipeline de déploiement réel
 
 | Étape | VM (VirtualBox) | OpenShift (MicroShift) |
 |---|---|---|
-| VALIDATION | `VBoxManage --version` + contrôle doublon | `oc apply --dry-run=server` |
+| VALIDATION | `VBoxManage --version` + nom unique vérifié | `oc apply --dry-run=server` |
 | PLAN | Résumé des ressources à créer | Liste des ressources (`-o name`) |
 | APPLY | `createvm`, `modifyvm`, `createmedium`, `storagectl`, `storageattach` | `oc apply -f manifest.yaml` |
 | VERIFY | `showvminfo` (état de la VM) | `oc get` (ressources créées) |
 | Annulation | `unregistervm --delete` | `oc delete -f manifest.yaml` |
 
-En cas d'échec : statut FAILED, message d'erreur persisté, notification temps réel.
+En cas d'échec : statut FAILED, message d'erreur explicite, notification temps réel.
 
 \newpage
 
@@ -263,20 +278,25 @@ Structure en packages : `controller` (API REST), `service` (métier), `repositor
 
 Services principaux :
 
-- **AuthService / UserService** : inscription, connexion, gestion des utilisateurs ;
+- **AuthService / UserService** : inscription, connexion, gestion des utilisateurs
+  (la suppression d'un utilisateur détache ses demandes pour conserver l'historique) ;
 - **LlmService** : dialogue avec Ollama, extraction JSON des paramètres ;
 - **IaCGeneratorService** : rendu des templates Thymeleaf ;
-- **DeployService** : orchestration du déploiement (statuts, logs, notifications) ;
+- **DeployService** : orchestration du déploiement réel (statuts, logs, notifications) ;
 - **RealDeployExecutor** : exécution réelle (ProcessBuilder) de VBoxManage et oc ;
 - **QuotaService** : limitation des ressources par utilisateur ;
 - **ProgressNotificationService** : progression temps réel via WebSocket STOMP.
 
-## 4.2 Frontend Angular
+## 4.2 Frontend Angular (interface « Geniac »)
 
 Modules : `auth` (connexion/inscription), `chat` (interface conversationnelle avec
 affichage du code et bouton Déployer), `history` (historique des demandes),
 `admin` (gestion utilisateurs). Guards de routes, intercepteur HTTP (JWT automatique),
 client WebSocket STOMP.
+
+L'interface soignée façon assistants IA modernes : avatars, réponse de l'IA affichée
+progressivement (streaming), exemples cliquables, menu utilisateur déroulant dans
+l'en-tête, logo animé, progression des déploiements en temps réel.
 
 ## 4.3 Mise en place de l'infrastructure réelle
 
@@ -291,18 +311,19 @@ client WebSocket STOMP.
 
 ### VMs VirtualBox
 
-Le backend exécute VBoxManage sur la machine hôte : création de la VM
-(`iac-vm-<id>`), configuration CPU/RAM, création et attachement du disque VDI.
-L'annulation supprime réellement la VM.
+Le backend exécute VBoxManage sur la machine hôte : création de la VM avec un nom
+unique (`iac-vm-xxx`, suffixe aléatoire), configuration CPU/RAM, création et
+attachement du disque VDI. L'annulation supprime réellement la VM.
 
 ## 4.4 Résultats obtenus
 
 - Demande « VM Ubuntu 2 CPU / 4 Go / 20 Go » → VM réelle créée dans VirtualBox
   (ostype Ubuntu 64-bit, specs exactes) ;
 - Demande « nginx 3 replicas sur OpenShift » → Deployment + Service + Route réels,
-  3 pods Running, application accessible via la Route (HTTP 200) ;
-- Historique et logs de déploiement persistés et consultables ;
-- Annulation réelle (VM supprimée, ressources OpenShift supprimées).
+  3 pods Running, application accessible dans le navigateur via la Route (HTTP 200) ;
+- Historique et logs de déploiement persistés (MySQL) et consultables ;
+- Annulation réelle (VM supprimée, ressources OpenShift supprimées) ;
+- Persistance totale : redémarrage de la plateforme sans perte de données.
 
 \newpage
 
@@ -310,16 +331,16 @@ L'annulation supprime réellement la VM.
 
 ## 5.1 Tests automatisés
 
-**59 tests unitaires** (JUnit 5 + Mockito), 100 % au vert :
+**61 tests unitaires** (JUnit 5 + Mockito), 100 % au vert :
 
 | Classe de test | Couverture |
 |---|---|
 | AuthServiceTest | Inscription, connexion, JWT |
-| UserServiceTest | Gestion des utilisateurs |
+| UserServiceTest | Gestion des utilisateurs (dont suppression avec détachement) |
 | IaCGeneratorServiceTest | Génération Terraform / OpenShift / KubeVirt |
 | LlmServiceTest | Extraction des paramètres, erreurs de parsing |
 | DeployServiceTest | Statuts, refus (doublon, approbation), annulation |
-| RealDeployExecutorTest | Mapping OS, nommage, gestion d'erreur d'exécution |
+| RealDeployExecutorTest | Mapping OS, nommage aléatoire unique, gestion d'erreur d'exécution |
 | QuotaServiceTest | Quotas par utilisateur |
 | ProgressNotificationServiceTest | Notifications WebSocket |
 | ChatbotControllerTest | Endpoints de l'API |
@@ -330,9 +351,10 @@ L'annulation supprime réellement la VM.
 |---|---|
 | Chat → génération Terraform vSphere | ✅ code généré avec paramètres extraits |
 | Chat → VM réelle VirtualBox | ✅ VM visible dans VirtualBox (specs exactes) |
-| Chat → conteneurs réels OpenShift | ✅ pods Running, Route HTTP 200 |
+| Chat → conteneurs réels OpenShift | ✅ pods Running, Route HTTP 200, page web accessible |
 | Annulation | ✅ VM / ressources supprimées réellement |
-| Historique | ✅ demandes et logs persistés |
+| Historique | ✅ demandes et logs persistés (visibles dans phpMyAdmin) |
+| Persistance | ✅ redémarrage complet sans perte de données |
 
 # Chapitre 6 — Difficultés rencontrées et solutions
 
@@ -343,16 +365,16 @@ L'annulation supprime réellement la VM.
 | RAM limitée (16 Go) entre Ollama, la VM et les outils | Optimisation : requests/limites modestes dans les manifests, gestion mémoire |
 | Ressources des pods trop gourmandes → échec d'ordonnancement | Template YAML corrigé (requests 100m/128Mi, limits = paramètres) |
 | Miroirs CentOS inaccessibles | AlmaLinux 9 (compatible MicroShift) via image cloud + cloud-init |
-| Installation OS automatisée non supportée par VirtualBox (EL9) | Image cloud GenericCloud + seed ISO cloud-init générée via Docker |
+| Collisions de noms de VMs après redémarrage de la base | Nommage aléatoire unique `iac-vm-xxx` stocké en base (`resourceName`) |
 
 # Conclusion générale et perspectives
 
 ## Bilan
 
-L'ensemble des objectifs du cahier des charges est atteint : une plateforme web
-fonctionnelle transforme une demande en langage naturel en infrastructure réelle —
-VMs créées dans VirtualBox et conteneurs déployés sur un vrai cluster OpenShift —
-avec génération de code IaC standardisé, traçabilité complète, sécurité JWT et
+L'ensemble des objectifs du cahier des charges est atteint : la plateforme **Geniac**
+transforme une demande en langage naturel en infrastructure réelle — VMs créées dans
+VirtualBox et conteneurs déployés sur un vrai cluster OpenShift — avec génération de
+code IaC standardisé, traçabilité complète, persistance des données, sécurité JWT et
 coût nul.
 
 ## Compétences acquises
@@ -360,7 +382,7 @@ coût nul.
 - Développement full-stack (Angular, Spring Boot) ;
 - Intégration d'un LLM local dans une application d'entreprise ;
 - Infrastructure as Code (Terraform, manifests Kubernetes/OpenShift) ;
-- Virtualisation (VirtualBox) et conteneurisation (Docker, OpenShift/MicroShift) ;
+- Virtualisation (VirtualBox) et conteneurisation (OpenShift/MicroShift) ;
 - Sécurité applicative (JWT, rôles) et tests automatisés.
 
 ## Perspectives
@@ -369,7 +391,7 @@ coût nul.
 - KubeVirt réel (VMs dans OpenShift) sur un cluster plus puissant ;
 - Installation automatique de l'OS dans les VMs créées (Ubuntu autoinstall) ;
 - Notifications email/Discord en production ;
-- Déploiement de la plateforme elle-même sur Kubernetes.
+- Conteneurisation de la plateforme (Docker) pour un déploiement serveur.
 
 # Annexes
 
@@ -389,13 +411,14 @@ coût nul.
 ## B. Démarrage de la plateforme
 
 ```
+# 0. Base de données (option profil mysql) : démarrer MySQL (XAMPP)
 # 1. IA locale
 ollama serve
 
 # 2. Cluster OpenShift
 VBoxManage startvm microshift --type headless
 
-# 3. Backend (mode réel)
+# 3. Backend (déploiement réel — MySQL doit être démarré dans XAMPP)
 cd iac-chatbot-backend
 mvn spring-boot:run
 
@@ -410,7 +433,7 @@ Comptes : `admin` / `password123` (ADMIN), `user` / `password123` (USER).
 
 ```
 iac-chatbot-backend/    API Spring Boot (Java 21)
-iac-chatbot-angular/    Frontend Angular 17+
+iac-chatbot-angular/    Frontend Angular 17+ (interface Geniac)
 openshift/              Cluster MicroShift (oc.exe, token, pull secret, seed)
-docker-compose.yml      Stack prod (backend, frontend, MySQL)
+start-demo.ps1          Script de démarrage automatique de la stack
 ```

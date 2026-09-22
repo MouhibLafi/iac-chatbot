@@ -280,6 +280,7 @@
                 <tr>
                   <th>ID</th>
                   <th>Date</th>
+                  <th>Utilisateur</th>
                   <th>Message</th>
                   <th>Type</th>
                   <th>Plateforme</th>
@@ -291,6 +292,9 @@
                   <tr>
                     <td>{{ request.id }}</td>
                     <td class="col-date">{{ formatDate(request.createdAt) }}</td>
+                    <td>
+                      <span class="param-badge">{{ request.username || '—' }}</span>
+                    </td>
                     <td>{{ truncate(request.userMessage) }}</td>
                     <td>{{ request.resourceType || '—' }}</td>
                     <td>{{ request.targetPlatform || '—' }}</td>

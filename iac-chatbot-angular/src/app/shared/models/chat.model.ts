@@ -42,6 +42,7 @@ export interface ChatResponse {
 export interface InfrastructureRequest {
   id: number;
   userMessage: string;
+  username?: string;      // Propriétaire de la demande (colonne admin)
   resourceType?: string;
   extractedParams?: string; // JSON sérialisé côté backend
   generatedCode?: string;
@@ -57,6 +58,7 @@ export interface ChatMessage {
   text: string;            // Texte du message (bulle user / erreur)
   response?: ChatResponse; // Réponse complète du backend (bulle bot)
   copied?: boolean;        // État du bouton "Copier" du bloc de code
+  visibleText?: string;    // Effet streaming : texte du bot affiché progressivement
 
   // --- État du déploiement, simulé ou réel (POST /api/deploy/{requestId}) ---
   deploying?: boolean;               // Déploiement en cours

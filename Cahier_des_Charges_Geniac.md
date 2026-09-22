@@ -1,21 +1,22 @@
-# CAHIER DES CHARGES — VERSION FINALE
+# CAHIER DES CHARGES — GENIAC
 ## Infrastructure as Code & Automation pilotée par Chatbot Intelligent
 
 | Champ | Valeur |
 |---|---|
-| Projet | Plateforme IaC multi-environnements avec chatbot conversationnel |
+| Projet | **Geniac** — Plateforme IaC multi-environnements avec chatbot conversationnel |
 | Stagiaire | [Nom du stagiaire] |
 | Entreprise | [Nom de l'entreprise] |
 | Encadrant | [Nom de l'encadrant] |
 | Durée du stage | 1 mois (20 jours ouvrés) |
-| Version | **FINALE 3.0 — Alignée sur le document officiel de la société** |
+| Version | **FINALE 4.0 — Version livrée (projet Geniac)** |
 | Date | Septembre 2026 |
 | Coût total | **0 €** (100 % outils gratuits et open-source) |
 
-> **Note de version :** cette version finale est alignée sur le document officiel fourni par la société
-> (*Infrastructure as Code & Automation*). Les plateformes cibles sont **VMware vSphere** et
-> **OpenShift Container Platform**. Aucun cloud public (AWS, Azure, GCP) n'est utilisé.
-> L'IA est **100 % locale** (Ollama + Llama 3) : aucune API payante.
+> **Note de version :** cette version décrit le projet **tel que livré**, sous son nom final **Geniac**,
+> alignée sur le document officiel fourni par la société (*Infrastructure as Code & Automation*).
+> Les plateformes cibles sont **VMware vSphere** et **OpenShift Container Platform**.
+> Aucun cloud public (AWS, Azure, GCP) n'est utilisé. L'IA est **100 % locale** (Ollama + Llama 3).
+> Les déploiements sont **réels** : le mode simulation a été retiré de la version finale.
 
 ---
 
@@ -57,7 +58,8 @@ Le projet couvre la conception et le développement d'une plateforme web complè
 - Génération des templates via **Thymeleaf** (moteur de templates intégré à Spring Boot)
 - Un système d'authentification sécurisée (**JWT**) avec gestion des rôles (USER / ADMIN)
 - Un dashboard de suivi avec historique et statistiques
-- Un système de déploiement automatisé via un pipeline intégré au backend (**RealDeployExecutor** : validation, exécution réelle VBoxManage/oc, journalisation)
+- Un système de **déploiement réel** intégré au backend (**RealDeployExecutor** : validation,
+  exécution réelle VBoxManage/oc, vérification, journalisation)
 
 ### 1.4 Hors périmètre
 
@@ -125,8 +127,8 @@ Le projet couvre la conception et le développement d'une plateforme web complè
 | ID | Cas d'utilisation | Description | Priorité | Acteur |
 |---|---|---|---|---|
 | UC-04 | Demander un déploiement | Demande en langage naturel (FR/EN), extraction automatique des paramètres par Ollama (Llama 3) — 100 % offline | Haute | Utilisateur, Admin |
-| UC-05 | Visualiser le code généré | Affichage du code Terraform/YAML avec coloration syntaxique avant confirmation | Haute | Utilisateur, Admin |
-| UC-06 | Confirmer le déploiement | Validation utilisateur et déclenchement du pipeline CI/CD | Haute | Utilisateur, Admin |
+| UC-05 | Visualiser le code généré | Affichage du code Terraform/YAML avant confirmation, bouton copier | Haute | Utilisateur, Admin |
+| UC-06 | Confirmer le déploiement | Validation utilisateur et déclenchement du déploiement réel | Haute | Utilisateur, Admin |
 | UC-07 | Demander des précisions | Si la demande est ambiguë ou la combinaison invalide (ex : conteneur sur vSphere), le chatbot demande des clarifications | Moyenne | Système → Utilisateur |
 
 **Module Suivi**
@@ -135,17 +137,16 @@ Le projet couvre la conception et le développement d'une plateforme web complè
 |---|---|---|---|---|---|
 | UC-08 | Consulter l'historique | Demandes avec filtres (statut, plateforme), détail + code | Moyenne | Utilisateur, Admin | ✅ Implémenté |
 | UC-09 | Consulter le dashboard | Statistiques : nombre de demandes, statut backend | Moyenne | Utilisateur, Admin | ✅ Implémenté |
-| UC-10 | Annuler un déploiement | Arrêt/destruction simulée (terraform destroy, oc delete) | Basse | Utilisateur, Admin | ✅ Implémenté |
+| UC-10 | Annuler un déploiement | Suppression réelle des ressources (VM VirtualBox supprimée, manifestes OpenShift supprimés via oc delete) | Basse | Utilisateur, Admin | ✅ Implémenté |
 
 **Module Administration**
 
 | ID | Cas d'utilisation | Description | Priorité | Acteur | Statut |
 |---|---|---|---|---|---|
-| UC-11 | Gérer les utilisateurs | Liste, rôles, suppression de comptes | Moyenne | Admin | ✅ Implémenté |
+| UC-11 | Gérer les utilisateurs | Liste, rôles, activation/désactivation, suppression (demandes détachées, historique conservé) | Moyenne | Admin | ✅ Implémenté |
 | UC-12 | Valider les demandes | Approuver/Rejeter (activable via `app.approval.required`) | Moyenne | Admin | ✅ Implémenté |
 | UC-13 | Configurer les quotas | Limites CPU/RAM/Stockage par utilisateur (bloquant à 403) | Moyenne | Admin | ✅ Implémenté |
 | UC-14 | Statistiques globales | Vue d'ensemble de toutes les demandes | Basse | Admin | ✅ Implémenté |
-| UC-15 | Gérer les templates IaC | Entité IaCTemplate + templates Thymeleaf versionnés | Basse | Admin | ✅ Partiellement (entité + fichiers) |
 | UC-16 | Configurer les notifications | Discord Webhook (déploiements, rejets) | Basse | Admin | ✅ Implémenté |
 
 ---
@@ -157,7 +158,7 @@ Le projet couvre la conception et le développement d'une plateforme web complè
 | Exigence | Critère | Valeur cible |
 |---|---|---|
 | Temps de réponse API | Latence endpoints REST | < 200 ms (p95) |
-| Temps d'extraction LLM | Appel Ollama local | < 5 s (Llama 3 8B) |
+| Temps d'extraction LLM | Appel Ollama local | < 15 s (Llama 3 8B) |
 | Temps de génération IaC | Rendu Thymeleaf | < 500 ms |
 | Temps de déploiement total | De la demande à la ressource opérationnelle | < 5 minutes |
 | Utilisateurs simultanés | Charge concurrente | 50+ utilisateurs |
@@ -176,24 +177,26 @@ Le projet couvre la conception et le développement d'une plateforme web complè
 
 ### 4.3 Ergonomie et UX
 
-- Interface responsive (mobile, tablette, desktop)
-- Chatbot intuitif : style conversationnel type ChatGPT, historique des messages
+- Interface responsive (mobile, tablette, desktop), design moderne type « glassmorphism »
+- Chatbot style ChatGPT/Claude : avatars (logo Geniac pour l'assistant, initiale pour l'utilisateur),
+  réponse de l'IA affichée progressivement (effet streaming), exemples de demandes cliquables,
+  menu utilisateur déroulant dans l'en-tête
 - Sélecteur de plateforme : **Auto** (détection par l'IA), **VMware vSphere**, **OpenShift**
-- Feedback immédiat : indicateurs de chargement, confirmations, messages d'erreur explicites
+- Feedback immédiat : progression temps réel (WebSocket), confirmations, messages d'erreur explicites
 - Internationalisation : support Français et Anglais
 
 ### 4.4 Maintenabilité
 
 - Code propre : principes SOLID, patterns Repository et Service
 - Documentation : JavaDoc, README, Swagger/OpenAPI
-- Tests : couverture minimale de 70 % (unitaires + intégration)
-- Versioning : Git avec Conventional Commits
-- Qualité : tests automatisés (59 tests unitaires), build Maven reproductible
+- Tests : 61 tests unitaires automatisés (100 % passent), build Maven reproductible
+- Versioning : Git
 
 ### 4.5 Scalabilité
 
-Architecture permettant l'évolution horizontale : conteneurisation Docker, déploiement possible sur Kubernetes,
-base de données avec réplication. Tous les composants sont open-source.
+Architecture permettant l'évolution horizontale : backend stateless (JWT), base de données externalisable
+(MySQL), composants open-source. Le passage de VirtualBox/MicroShift à un vCenter/cluster d'entreprise
+se fait par configuration, sans modification de code.
 
 ---
 
@@ -204,20 +207,16 @@ base de données avec réplication. Tous les composants sont open-source.
 | Couche | Technologie | Version | Justification | Coût |
 |---|---|---|---|---|
 | Frontend | Angular 17+ | 17+ | Framework complet, TypeScript, composants réactifs | 0 € |
-| Frontend (prototype) | HTML/CSS/JS | — | Prototype fonctionnel servant de référence | 0 € |
 | Backend | Spring Boot | 3.2+ | Standard enterprise, intégration native avec l'IA | 0 € |
 | IA / LLM | **Ollama + Llama 3** | — | 100 % local et gratuit, offline, pas de quota | 0 € |
-| Base de données (dev) | H2 Database | 2.2+ | Zéro installation, parfait pour tests/dev | 0 € |
-| Base de données (prod) | MySQL Community | 8.0+ | Open-source, fiable, bien supporté par Spring Data JPA | 0 € |
+| Base de données | MySQL Community | 8.0+ | Open-source, fiable, consultation via phpMyAdmin (XAMPP) | 0 € |
 | Templates | Thymeleaf | 3.1+ | Intégration native Spring Boot, mode TEXT pour IaC | 0 € |
 | Exécution VMs (local) | VirtualBox (VBoxManage) | 7.2+ | Création réelle de VMs en local | 0 € |
 | Exécution OpenShift (local) | MicroShift | 4.18 | Vrai cluster OpenShift en VM VirtualBox | 0 € |
-| Déploiement | RealDeployExecutor (backend) | — | Pipeline validation, journalisation, contrôle | 0 € |
-| Conteneurs | Docker Desktop | 4.3+ | Gratuit pour usage personnel | 0 € |
+| Déploiement | RealDeployExecutor (backend) | — | Pipeline réel : validation, apply, verify, journalisation | 0 € |
 | Sécurité | Spring Security + JWT | 6.2+ | Authentification stateless | 0 € |
-| Temps réel | WebSocket STOMP | — | Chat interactif bidirectionnel | 0 € |
-| Notifications | Discord Webhook | — | 100 % gratuit, simple à intégrer | 0 € |
-| Email (dev) | MailHog | — | SMTP local gratuit, capture emails | 0 € |
+| Temps réel | WebSocket STOMP | — | Progression des déploiements en direct | 0 € |
+| Notifications | Discord Webhook | — | 100 % gratuit, simple à intégrer (optionnel) | 0 € |
 | Documentation API | Swagger UI (springdoc) | 2.5+ | Génération automatique, interactive | 0 € |
 
 **COÛT TOTAL DE LA STACK : 0 €**
@@ -230,7 +229,7 @@ base de données avec réplication. Tous les composants sont open-source.
 | API Gateway | Spring Security, JWT Filter, CORS | Authentification, autorisation, sécurisation endpoints |
 | Application | Spring Boot, Controllers, Services | Logique métier, orchestration des flux |
 | Intelligence | Ollama (Llama 3), Thymeleaf | NLP local, extraction paramètres, génération code IaC |
-| Données | Spring Data JPA, H2 (dev) / MySQL (prod) | Persistance, requêtes |
+| Données | Spring Data JPA, MySQL (local/prod) | Persistance, requêtes |
 | Exécution | RealDeployExecutor (ProcessBuilder), VBoxManage, oc | Pipeline de déploiement réel |
 | Infrastructure | VirtualBox (VMs), MicroShift (OpenShift local) | VMs réelles, déploiement conteneurs réel |
 
@@ -287,25 +286,32 @@ Trois combinaisons sont supportées :
 La combinaison **CONTAINER + VSPHERE** est rejetée avec un message de clarification (UC-07) :
 les conteneurs se déploient sur OpenShift, les VMs classiques sur VMware vSphere.
 
-### 6.3 Module Déploiement (pipeline intégré au backend)
+### 6.3 Module Déploiement RÉEL (pipeline intégré au backend)
 
-Le déploiement est orchestré par le backend (`DeployService` + `RealDeployExecutor`) :
+Le déploiement est orchestré par le backend (`DeployService` + `RealDeployExecutor`) — **100 % réel** :
 
-1. **Validation** : vérification réelle (`VBoxManage --version` + contrôle doublon, `oc apply --dry-run=server`)
+1. **Validation** : vérification réelle (`VBoxManage --version`, `oc apply --dry-run=server`)
 2. **Plan** : prévisualisation des ressources à créer
 3. **Approbation** (optionnel) : validation manuelle par un administrateur
-4. **Apply** : exécution réelle (`VBoxManage createvm/modifyvm/...`, `oc apply`)
+4. **Apply** : exécution réelle (`VBoxManage createvm/modifyvm/createmedium/storagectl/storageattach`, `oc apply`)
 5. **Vérification** : contrôle post-déploiement (`showvminfo`, `oc get`)
-6. **Journalisation** : logs dans H2 (dev) ou MySQL (prod) + notifications temps réel (WebSocket)
+6. **Journalisation** : logs persistés en base (DeploymentLog) + notifications temps réel (WebSocket)
+
+**Nommage des VMs** : chaque VM reçoit un nom unique `iac-vm-xxx` (3 caractères aléatoires), stocké dans
+le champ `resourceName` de la demande. Ce nom est réutilisé lors de l'annulation pour supprimer exactement
+la bonne VM — aucune collision possible, même après redémarrage de la base.
+
+**Annulation (UC-10)** : suppression réelle — `VBoxManage unregistervm --delete` pour les VMs,
+`oc delete -f manifest.yaml` pour OpenShift.
 
 ### 6.4 Interfaces utilisateur
 
 | Écran | Description | Composants |
 |---|---|---|
-| Page de connexion | Authentification JWT | Formulaire login/mot de passe, lien inscription |
-| Chatbot | Interface conversationnelle principale | Zone messages, champ saisie, **sélecteur de plateforme**, affichage code, bouton copier |
-| Dashboard | Vue d'ensemble des déploiements | Cartes statistiques, historique |
-| Panel Admin | Gestion de la plateforme | Tableau utilisateurs, statistiques |
+| Page de connexion | Authentification JWT, logo Geniac animé | Formulaire login/mot de passe, onglet inscription |
+| Chatbot | Interface conversationnelle type ChatGPT/Claude | Avatars, effet streaming, exemples cliquables, sélecteur de plateforme, code copiable, déploiement temps réel |
+| Historique | Toutes les demandes | Filtres statut/plateforme, détail dépliable, code généré |
+| Panel Admin | Gestion de la plateforme | Statistiques, utilisateurs (rôles, quotas, suppression), approbations |
 
 ---
 
@@ -318,7 +324,7 @@ Le déploiement est orchestré par le backend (`DeployService` + `RealDeployExec
 | Accès | Accès VPN + credentials vCenter et OpenShift (si déploiement entreprise) | Bloquant si non fourni | Exécution locale réelle : VirtualBox + MicroShift |
 | Hardware LLM | Ollama nécessite ~4-8 Go RAM et un CPU moderne | Performance réduite sur PC ancien | Modèle plus petit (Gemma 2B) en backup |
 | Réseau | Firewall entre environnements dev et prod | Tests limités | Environnement de test dédié |
-| Permissions | Droits limités sur VMware/OpenShift pour un stagiaire | Déploiement réel impossible | Mode simulation + review admin |
+| Permissions | Droits limités sur VMware/OpenShift pour un stagiaire | Déploiement entreprise impossible | Exécution locale réelle + review admin |
 | Temps | 1 mois (20 jours) pour MVP complet | Scope à ajuster | Priorisation fonctionnalités |
 
 ### 7.2 Risques identifiés
@@ -326,8 +332,8 @@ Le déploiement est orchestré par le backend (`DeployService` + `RealDeployExec
 | Risque | Probabilité | Impact | Plan d'action |
 |---|---|---|---|
 | LLM local ne comprend pas la demande | Moyenne | Élevé | Prompt engineering, fallback valeurs par défaut, questions guidées |
-| Échec déploiement Terraform | Moyenne | Élevé | Validation préalable, terraform plan, mode simulation |
-| Performance API lente | Faible | Moyen | Cache local, appels async, pagination |
+| Échec d'un déploiement réel | Moyenne | Élevé | Étape VALIDATION préalable (dry-run), statut FAILED + log d'erreur explicite, annulation propre |
+| Performance API lente | Faible | Moyen | Appels async, pagination |
 | Sécurité (injection, fuite données) | Faible | Critique | Validation entrées, audit logs, Ollama local = données jamais externalisées |
 | Ollama indisponible | Faible | Élevé | Backup : modèle plus petit ou free tier (Groq, Gemini) |
 
@@ -348,30 +354,28 @@ Le déploiement est orchestré par le backend (`DeployService` + `RealDeployExec
 
 | Catégorie | Livrable | Description | Échéance |
 |---|---|---|---|
-| Code | Backend Spring Boot | API REST : auth, chatbot, historique, admin | S2 |
+| Code | Backend Spring Boot | API REST : auth, chatbot, déploiement réel, historique, admin | S2 |
 | Code | Templates IaC | Terraform (vSphere) + YAML (OpenShift/KubeVirt) via Thymeleaf | S2 |
-| Code | Frontend Angular | Interface (chatbot, dashboard, panel admin) | S3 |
-| Code | Pipeline de déploiement | DeployService + RealDeployExecutor : validation, apply, journalisation | S3 |
-| Code | Dockerfile / Compose | Conteneurisation backend et frontend | S3 |
+| Code | Frontend Angular | Interface Geniac (chatbot, historique, panel admin) | S3 |
+| Code | Pipeline de déploiement | DeployService + RealDeployExecutor : validation, apply, verify, journalisation | S3 |
 | Doc | README.md | Installation, démarrage rapide, configuration | S4 |
 | Doc | Documentation API | Swagger/OpenAPI (springdoc) | S2 |
-| Doc | Cahier des charges | Ce document (version finale) | S1 |
+| Doc | Cahier des charges | Ce document (version finale Geniac) | S1 |
 | Doc | Rapport de stage | Intro, analyse, conception, réalisation, bilan | S4 |
-| Demo | Présentation + démo live | Scénario 5 min : texte → params → code → déploiement → dashboard | S4 |
+| Demo | Présentation + démo live | Scénario 5 min : texte → params → code → déploiement réel → dashboard | S4 |
 
 ### 8.3 Critères d'acceptation
 
 - ✅ Fonctionnel : le chatbot (Ollama) comprend ≥ 85 % des requêtes en langage naturel (FR/EN) — *validé en test E2E*
 - ✅ Fonctionnel : le code généré cible **VMware vSphere** (Terraform) et **OpenShift** (YAML/KubeVirt)
-- ✅ Fonctionnel : déploiement (mode simulation) avec journalisation complète (DeploymentLog)
-- ✅ Fonctionnel : historique avec filtres, workflow d'approbation admin, quotas utilisateur
+- ✅ Fonctionnel : **déploiement réel** — VMs créées dans VirtualBox, conteneurs déployés sur OpenShift (MicroShift), avec journalisation complète (DeploymentLog)
+- ✅ Fonctionnel : **annulation réelle** — suppression effective des ressources créées
+- ✅ Fonctionnel : historique persistant avec filtres, workflow d'approbation admin, quotas utilisateur
 - ✅ Performance : génération IaC < 500 ms (rendu Thymeleaf)
 - ✅ Sécurité : authentification JWT fonctionnelle, aucune fuite de credentials, aucun secret en dur
-- ✅ Qualité : 59 tests automatisés (100 % passent), format d'erreur standardisé
+- ✅ Qualité : 61 tests automatisés (100 % passent), format d'erreur standardisé
 - ✅ Documentation : README complet, API documentée (Swagger)
 - ✅ Coût : aucun service payant, tous composants open-source ou gratuits
-- ✅ Validation réelle (`VBoxManage`, `oc apply --dry-run=server`) — exécutée sur VirtualBox et MicroShift
-- ✅ Déploiement réel : VMs créées dans VirtualBox, conteneurs déployés sur OpenShift (MicroShift)
 
 ---
 
@@ -379,6 +383,7 @@ Le déploiement est orchestré par le backend (`DeployService` + `RealDeployExec
 
 | Terme | Définition |
 |---|---|
+| Geniac | Nom de la plateforme : le « génie » qui transforme une phrase en infrastructure réelle |
 | IaC | Infrastructure as Code : gestion de l'infrastructure via des fichiers de configuration versionnés |
 | LLM | Large Language Model : modèle de langage (ex : Llama 3 via Ollama) |
 | Ollama | Outil gratuit et open-source pour exécuter des LLM localement (100 % offline) |
@@ -391,25 +396,26 @@ Le déploiement est orchestré par le backend (`DeployService` + `RealDeployExec
 | MicroShift | OpenShift local allégé de Red Hat (vrai cluster en VM) |
 | VirtualBox | Virtualisation gratuite et open-source d'Oracle (VMs réelles en local) |
 | Terraform | Outil IaC open-source de HashiCorp (utilisé ici avec le provider vSphere) |
-| RealDeployExecutor | Moteur de déploiement du backend (exécute VBoxManage / oc) |
+| RealDeployExecutor | Moteur de déploiement réel du backend (exécute VBoxManage / oc) |
 | JWT | JSON Web Token : tokens d'accès signés et vérifiables |
 | WebSocket / STOMP | Communication bidirectionnelle temps réel / protocole de messagerie associé |
 | Thymeleaf | Moteur de templates Java (utilisé ici en mode TEXT pour générer Terraform/YAML) |
-| H2 / MySQL Community | Bases de données gratuites (dev / prod) |
-| Discord Webhook / MailHog | Notifications gratuites / SMTP local de développement |
+| MySQL Community | Base de données gratuite (locale XAMPP / prod) |
+| Discord Webhook | Notifications gratuites (optionnelles) |
 
 ---
 
 ## 10. Récapitulatif
 
-Ce cahier des charges définit la version **finale** du projet IaC Chatbot, alignée sur le document officiel
+Ce cahier des charges définit la version **finale livrée** du projet **Geniac**, alignée sur le document officiel
 de la société. Points clés :
 
 - ✅ **Deux plateformes uniquement** : VMware vSphere (VMs) et OpenShift (conteneurs + VMs KubeVirt)
 - ✅ **IA 100 % locale** : Ollama + Llama 3 — zéro coût, zéro fuite de données
+- ✅ **Déploiement 100 % réel** : VMs VirtualBox et conteneurs OpenShift créés/supprimés pour de vrai
 - ✅ **Génération IaC via Thymeleaf** : templates versionnés, standardisés, réutilisables
 - ✅ **Coût total : 0 €** — économie estimée ~18 000 $/an par rapport à une stack payante
-- ✅ **Traçabilité** : historique des demandes persisté en base de données
+- ✅ **Traçabilité** : historique des demandes et logs persistés en base de données
 
 | Composant | Version payante | Version gratuite (ce projet) | Économie |
 |---|---|---|---|
@@ -425,4 +431,4 @@ de la société. Points clés :
 
 *Document préparé par : [Nom du stagiaire]*
 *Entreprise : [Nom de l'entreprise] — Encadrant : [Nom de l'encadrant]*
-*Version : FINALE 3.0 — Septembre 2026 — Alignée sur le document officiel de la société*
+*Version : FINALE 4.0 — Septembre 2026 — Projet Geniac, alignée sur le document officiel de la société*
