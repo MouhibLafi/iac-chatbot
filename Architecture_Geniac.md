@@ -210,7 +210,7 @@ DEPLOY --> Utilisateur : Progression WebSocket temps réel\n+ Notification (Disc
 ## 4. Structure du Projet (implémentation réelle)
 
 ```
-iac-chatbot-backend/
+geniac-backend/
 ├── src/main/java/com/company/iacchatbot/
 │   ├── IacChatbotApplication.java
 │   ├── config/

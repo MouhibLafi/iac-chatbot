@@ -12,7 +12,7 @@ grâce à une IA **100 % locale**.
 
 | Couche | Technologie |
 |---|---|
-| Frontend | Angular 17+ (`iac-chatbot-angular/`) |
+| Frontend | Angular 17+ (`geniac-angular/`) |
 | Backend | Spring Boot 3.2, Java 21, Spring Security + JWT |
 | IA | Ollama + Llama 3 (local, offline) |
 | Génération IaC | Thymeleaf (mode TEXT) : Terraform vSphere, YAML OpenShift, YAML KubeVirt |
@@ -48,12 +48,12 @@ ollama serve
 & "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" startvm microshift --type headless
 
 # 3. Backend en mode REEL (port 8081, base MySQL)
-cd iac-chatbot-backend
+cd geniac-backend
 $env:OC_TOKEN=Get-Content "C:\Users\mouhi\Desktop\iac test\openshift\oc-token.txt"
 mvn spring-boot:run
 
 # 4. Frontend (autre terminal)
-cd iac-chatbot-angular
+cd geniac-angular
 npm install   # première fois uniquement
 npx ng serve  # http://localhost:4200
 ```
@@ -102,7 +102,7 @@ VBoxManage/oc et l'adresse du cluster ont des valeurs par défaut dans
 ## Tests
 
 ```powershell
-cd iac-chatbot-backend
+cd geniac-backend
 mvn test              # 61 tests unitaires (génération IaC, LLM, déploiement, controller)
 ```
 

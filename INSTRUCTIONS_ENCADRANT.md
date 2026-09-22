@@ -33,7 +33,7 @@ iac test/
 ├── 📄 start-demo.ps1                      → Script démarrage automatique
 ├── 📄 .gitignore                          → Fichiers Git ignorés
 │
-├── 📂 iac-chatbot-backend/                → Backend Spring Boot (Java 21)
+├── 📂 geniac-backend/                → Backend Spring Boot (Java 21)
 │   ├── src/main/java/                     → Code source Java
 │   │   └── com/company/iacchatbot/
 │   │       ├── controller/                → API REST
@@ -50,7 +50,7 @@ iac test/
 │   ├── src/test/java/                     → 61 tests unitaires
 │   └── pom.xml                            → Dépendances Maven
 │
-├── 📂 iac-chatbot-angular/                → Frontend Angular 17+
+├── 📂 geniac-angular/                → Frontend Angular 17+
 │   ├── src/app/
 │   │   ├── features/                      → Fonctionnalités
 │   │   │   ├── auth/                      → Login/Register
@@ -93,12 +93,12 @@ ollama serve
 VBoxManage startvm microshift --type headless
 
 # 3. Backend Spring Boot (port 8081)
-cd iac-chatbot-backend
+cd geniac-backend
 $env:OC_TOKEN=Get-Content "../openshift/oc-token.txt"
 mvn spring-boot:run
 
 # 4. Frontend Angular (port 4200)
-cd iac-chatbot-angular
+cd geniac-angular
 npm install   # première fois uniquement
 npx ng serve
 ```
@@ -206,7 +206,7 @@ Le script démarre automatiquement tous les services.
 - Couverture : Controllers, Services, Génération IaC, Déploiement
 
 ```powershell
-cd iac-chatbot-backend
+cd geniac-backend
 mvn test
 ```
 

@@ -55,7 +55,7 @@ $token = Get-Content oc-token.txt
 Nouveau terminal PowerShell :
 
 ```powershell
-cd "C:\Users\mouhi\Desktop\iac test\iac-chatbot-backend"
+cd "C:\Users\mouhi\Desktop\iac test\geniac-backend"
 $env:OC_TOKEN=Get-Content "C:\Users\mouhi\Desktop\iac test\openshift\oc-token.txt"
 mvn spring-boot:run
 ```
@@ -67,7 +67,7 @@ Attends le message `Started IacChatbotApplication`.
 Nouveau terminal PowerShell :
 
 ```powershell
-cd "C:\Users\mouhi\Desktop\iac test\iac-chatbot-angular"
+cd "C:\Users\mouhi\Desktop\iac test\geniac-angular"
 npx ng serve
 ```
 

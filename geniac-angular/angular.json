@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "iac-chatbot-angular": {
+    "geniac-angular": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -72,10 +72,10 @@
           },
           "configurations": {
             "production": {
-              "buildTarget": "iac-chatbot-angular:build:production"
+              "buildTarget": "geniac-angular:build:production"
             },
             "development": {
-              "buildTarget": "iac-chatbot-angular:build:development"
+              "buildTarget": "geniac-angular:build:development"
             }
           },
           "defaultConfiguration": "development"

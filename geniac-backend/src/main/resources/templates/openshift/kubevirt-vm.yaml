@@ -8,7 +8,7 @@ metadata:
   name: [[${vmName}]]
   labels:
     app: [[${vmName}]]
-    generated-by: iac-chatbot
+    generated-by: geniac
 spec:
   running: true
   template:

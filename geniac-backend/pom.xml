@@ -13,7 +13,7 @@
     </parent>
 
     <groupId>com.company</groupId>
-    <artifactId>iac-chatbot-backend</artifactId>
+    <artifactId>geniac-backend</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <name>IaC Chatbot Backend</name>
     <description>Infrastructure as Code automation with AI-powered chatbot</description>

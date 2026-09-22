@@ -8,7 +8,7 @@ metadata:
   name: [[${appName}]]
   labels:
     app: [[${appName}]]
-    generated-by: iac-chatbot
+    generated-by: geniac
 spec:
   selector:
     app: [[${appName}]]

@@ -419,11 +419,11 @@ ollama serve
 VBoxManage startvm microshift --type headless
 
 # 3. Backend (déploiement réel — MySQL doit être démarré dans XAMPP)
-cd iac-chatbot-backend
+cd geniac-backend
 mvn spring-boot:run
 
 # 4. Frontend
-cd iac-chatbot-angular
+cd geniac-angular
 npx ng serve    # http://localhost:4200
 ```
 
@@ -432,8 +432,8 @@ Comptes : `admin` / `password123` (ADMIN), `user` / `password123` (USER).
 ## C. Structure des répertoires
 
 ```
-iac-chatbot-backend/    API Spring Boot (Java 21)
-iac-chatbot-angular/    Frontend Angular 17+ (interface Geniac)
+geniac-backend/    API Spring Boot (Java 21)
+geniac-angular/    Frontend Angular 17+ (interface Geniac)
 openshift/              Cluster MicroShift (oc.exe, token, pull secret, seed)
 start-demo.ps1          Script de démarrage automatique de la stack
 ```
